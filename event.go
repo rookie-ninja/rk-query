@@ -8,12 +8,15 @@ import "go.uber.org/zap"
 
 // An interface for recording event types.
 // A typical event could be http GET/PUT/DELETE request.
-type EventData interface {
+type Event interface {
 	// Application name should be immutable
-	GetApplicationName() string
+	GetAppName() string
 
 	// Get hostname with system call
 	GetHostName() string
+
+	// Get zap logger underlying
+	GetZapLogger() *zap.Logger
 
 	// Get event data name like GET / PUT / DELETE
 	GetOperation() string
@@ -26,25 +29,24 @@ type EventData interface {
 
 	GetEventStatus() eventDataStatus
 
-	// Timer related
-	GetStartTime() int64
+	GetEndTimeMS() int64
 
-	SetStartTime(int64) error
+	GetStartTimeMS() int64
 
-	GetEndTime() int64
+	SetStartTimeMS(int64)
 
-	SetEndTime(endTime int64) error
+	SetEndTimeMS(int64)
 
-	StartTimer(string) error
+	StartTimer(string)
 
-	EndTimer(string) error
+	EndTimer(string)
 
-	UpdateTimer(string, int64) error
+	UpdateTimer(string, int64)
 
-	UpdateTimerWithSample(string, int64, int64) error
+	UpdateTimerWithSample(string, int64, int64)
 
 	// If no timer exists for the name, -1 is returned.
-	GetTimeElapsed(string) int64
+	GetTimeElapsedMS(string) int64
 
 	// Remote Address related
 	GetRemoteAddr() string
@@ -58,50 +60,27 @@ type EventData interface {
 	// Increments the named counter by the given value.
 	InCCounter(string, int64)
 
-	AddKeyValuePair(key, value string)
+	AddErr(error)
 
-	// appends the value to an existing name value pair.
-	// If the value does not exist in the collection of
-	// name value pairs, it is added.  If the value already
-	// exists, a comma is appended to the existing value
-	// and then the new value is appended.
-	//
-	// If appends more than DEFAULT_MAX_VALUE_COUNT
-	// records, oldest records will be thrown out.
-	AppendKeyValuePair(key, value string)
+	AddKv(string, string)
 
-	GetValue(key string) string
+	AppendKv(string, string)
 
-	// Finish Event Data records the time of the last event.
-	// Event time is measured as the time difference between calls to this method.
-	// There are uses where we want to measure the time that we are in mutually exclusive states.
-	// There are situations where determining the next or the previous state is
-	// not possible at the same instant.  This method alleviates the problem.
-	// You need not know want timer will be starting.
-	// You just have to supply the timer that finished.
-	//
-	// One property of this method is that the sum of all events recorded
-	// with this method will equal the sum the time for the entire event data.
-	// (As long as start time is not changed)
-	FinishCurrentEvent(name string) error
+	GetValue(string) string
+
+	FinishCurrentEvent(string)
 
 	// Inserts an event into the event history.
-	RecordHistoryEvent(name string) error
+	RecordHistoryEvent(string)
 
-	// Writes the event data to the query log.
-	RecordProfiledData() error
+	// Writes the event data to log.
+	WriteLog()
 
-	// Output as JSON format which is default
-	ToJsonFormat() string
+	ToZapFieldsMin() []zap.Field
 
 	ToZapFields() []zap.Field
 
-	// Output as human friendly format
-	ToPrettyFormat() string
-
 	GetEventHistory() *eventHistory
-
-	GetLogger() *zap.Logger
 }
 
 type eventDataStatus int
@@ -126,3 +105,21 @@ func (status eventDataStatus) String() string {
 	return names[status]
 }
 
+type Format int
+
+const (
+	JSON Format = 0
+	RK   Format = 1
+)
+
+// Stringfy above config file types.
+func (fileType Format) String() string {
+	names := [...]string{"JSON", "RK"}
+
+	// Please do not forget to change the boundary while adding a new config file types
+	if fileType < JSON || fileType > RK {
+		return "UNKNOWN"
+	}
+
+	return names[fileType]
+}

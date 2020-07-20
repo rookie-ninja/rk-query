@@ -11,6 +11,6 @@ type RealTimeSource struct{}
 
 // A little bit expensive calling UnixNano() every time.
 // Needs an optimization.
-func (source *RealTimeSource) CurrentTimeMillis() int64 {
+func (source *RealTimeSource) CurrentTimeMS() int64 {
 	return time.Now().UnixNano()/(int64(time.Millisecond))
 }

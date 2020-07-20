@@ -10,8 +10,8 @@ import (
 )
 
 type eventHistory struct {
-	builder bytes.Buffer
-	truncated bool
+	builder        bytes.Buffer
+	truncated      bool
 	previousMillis int64
 }
 
@@ -25,7 +25,7 @@ func newEventHistory() *eventHistory {
 }
 
 // Appends an elapsed time entry to the history.
-func (his *eventHistory) elapsed(action string, time int64) {
+func (his *eventHistory) elapsedMS(action string, time int64) {
 	if his.truncated {
 		return
 	}
@@ -39,17 +39,17 @@ func (his *eventHistory) elapsed(action string, time int64) {
 		size++
 	}
 
-	if length+size+1+len(QueryTruncatedString) > QueryMaxHistoryLength {
+	if length+size+1+len(EventTruncatedString) > EventMaxHistoryLength {
 		his.truncated = true
 		if length > 0 {
 			// we have something in the string and adding more would've
 			// put us over our limit, so just mark the string truncated
-			his.builder.WriteString(QueryCommaTruncatedString)
+			his.builder.WriteString(EventCommaTruncatedString)
 		} else {
 			// we have nothing in the string and we were asked to add
 			// something so large that we'd immediately be over the limit;
 			// we'll immediately go TRUNCATED in this case.
-			his.builder.WriteString(QueryTruncatedString)
+			his.builder.WriteString(EventTruncatedString)
 		}
 		return
 	}
