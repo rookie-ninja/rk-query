@@ -1,3 +1,7 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rk_query
 
 import (
@@ -21,7 +25,7 @@ func NewTimeTracker(name string) *timeTracker {
 		return nil
 	}
 
-	tracker := timeTracker{
+	return &timeTracker{
 		name:            name,
 		indexCurr:       0,
 		lastTimestampMS: 0,
@@ -29,15 +33,34 @@ func NewTimeTracker(name string) *timeTracker {
 		elapsedTotalMS:  0,
 		isFinished:      false,
 	}
-
-	return &tracker
 }
 
 func (tracker *timeTracker) GetName() string {
 	return tracker.name
 }
 
+func (tracker *timeTracker) GetCount() int64 {
+	return tracker.countTotal
+}
+
+func (tracker *timeTracker) GetElapsedMS() int64 {
+	return tracker.elapsedTotalMS
+}
+
 func (tracker *timeTracker) Start(nowMS int64) {
+	if nowMS < 0 {
+		return
+	}
+
+	// This is a little bit hard to understand bellow logic
+	// For example, for every duplicated event, we track every calls.
+	//
+	// |  22  333
+	// |111111111111
+	// +-------------
+	//
+	// In case above, the x-axis represents the time, y-axis represents concurrent event.
+	// The total time elapsed would be 18 with this formula: 17 = 12 + 3 + 2
 	if tracker.indexCurr > 0 {
 		tracker.elapsedTotalMS += tracker.indexCurr * (nowMS - tracker.lastTimestampMS)
 	}
@@ -48,7 +71,7 @@ func (tracker *timeTracker) Start(nowMS int64) {
 }
 
 func (tracker *timeTracker) End(nowMS int64) {
-	if tracker.indexCurr < 1 {
+	if tracker.indexCurr < 1 || nowMS < 0 {
 		return
 	}
 
@@ -58,10 +81,17 @@ func (tracker *timeTracker) End(nowMS int64) {
 }
 
 func (tracker *timeTracker) Elapse(elapseTimeMS int64) {
+	if elapseTimeMS < 0 {
+		return
+	}
 	tracker.ElapseWithSample(elapseTimeMS, 1)
 }
 
 func (tracker *timeTracker) ElapseWithSample(elapseTimeMS int64, numSample int64) {
+	if elapseTimeMS < 0 || numSample < 0 {
+		return
+	}
+
 	tracker.countTotal += numSample
 	tracker.elapsedTotalMS += elapseTimeMS
 }
@@ -80,7 +110,17 @@ func (tracker *timeTracker) Finish(timeSource TimeSource) {
 	tracker.indexCurr = 0
 }
 
-func (tracker *timeTracker) StringWithTimeSource(timeSource TimeSource) (string, error) {
+func (tracker *timeTracker) String() string {
+	var builder bytes.Buffer
+
+	builder.WriteString(tracker.name + ":" +
+		strconv.FormatInt(tracker.elapsedTotalMS, 10) + "/" +
+		strconv.FormatInt(tracker.countTotal, 10))
+
+	return builder.String()
+}
+
+func (tracker *timeTracker) StringWithTimeSource(timeSource TimeSource) string {
 	if tracker.indexCurr == 0 {
 		return tracker.String()
 	}
@@ -89,12 +129,12 @@ func (tracker *timeTracker) StringWithTimeSource(timeSource TimeSource) (string,
 
 	var builder bytes.Buffer
 
-	builder.WriteString(tracker.name + EventOpenMarker +
+	builder.WriteString(tracker.name + OpenMarker +
 		strconv.FormatInt(tracker.indexCurr, 10) + ":" +
 		strconv.FormatInt(elapsed, 10) + "/" +
 		strconv.FormatInt(tracker.countTotal, 10))
 
-	return builder.String(), nil
+	return builder.String()
 }
 
 func (tracker *timeTracker) ToZapFieldsWithTimeSource(timeSource TimeSource) ([]zap.Field, error) {
@@ -105,14 +145,14 @@ func (tracker *timeTracker) ToZapFieldsWithTimeSource(timeSource TimeSource) ([]
 	elapsedMS := tracker.elapsedTotalMS + tracker.indexCurr * (timeSource.CurrentTimeMS() - tracker.lastTimestampMS)
 
 	return []zap.Field{
-		zap.Int64(tracker.name+EventOpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".elapsed_ms", elapsedMS),
-		zap.Int64(tracker.name+EventOpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".count", tracker.countTotal),
+		zap.Int64(tracker.name+OpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".elapsed_ms", elapsedMS),
+		zap.Int64(tracker.name+OpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".count", tracker.countTotal),
 	}, nil
 }
 
 func (tracker *timeTracker) ToZapFields() ([]zap.Field, error) {
 	if tracker.indexCurr > 0 {
-		return nil, errors.New("there is still open timer")
+		return nil, errors.NewNotValid(nil,"there is still open timer")
 	}
 
 	return []zap.Field{
@@ -121,24 +161,3 @@ func (tracker *timeTracker) ToZapFields() ([]zap.Field, error) {
 	}, nil
 }
 
-func (tracker *timeTracker) String() (string, error) {
-	if tracker.indexCurr > 0 {
-		return "", errors.New("cannot call ToString() with open timers")
-	}
-
-	var builder bytes.Buffer
-
-	builder.WriteString(tracker.name + ":" +
-		strconv.FormatInt(tracker.elapsedTotalMS, 10) + "/" +
-		strconv.FormatInt(tracker.countTotal, 10))
-
-	return builder.String(), nil
-}
-
-func (tracker *timeTracker) GetCount() int64 {
-	return tracker.countTotal
-}
-
-func (tracker *timeTracker) GetElapsedMS() int64 {
-	return tracker.elapsedTotalMS
-}

@@ -39,17 +39,17 @@ func (his *eventHistory) elapsedMS(action string, time int64) {
 		size++
 	}
 
-	if length+size+1+len(EventTruncatedString) > EventMaxHistoryLength {
+	if length+size+1+len(Truncated) > MaxHistoryLength {
 		his.truncated = true
 		if length > 0 {
 			// we have something in the string and adding more would've
 			// put us over our limit, so just mark the string truncated
-			his.builder.WriteString(EventCommaTruncatedString)
+			his.builder.WriteString(CommaTruncated)
 		} else {
 			// we have nothing in the string and we were asked to add
 			// something so large that we'd immediately be over the limit;
 			// we'll immediately go TRUNCATED in this case.
-			his.builder.WriteString(EventTruncatedString)
+			his.builder.WriteString(Truncated)
 		}
 		return
 	}

@@ -1,5 +1,8 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rk_query
-
 
 import (
 	"bytes"
@@ -18,11 +21,11 @@ func (entry *eventEntryImpl) FormatAsRk(event Event) string {
 
 	builder := bytes.Buffer{}
 
-	builder.WriteString(EventScopeDelimiter + "\n")
+	builder.WriteString(ScopeDelimiter + "\n")
 
 	entry.addPredifinedValues(&builder, eventImpl)
 
-	builder.WriteString(EventEOE)
+	builder.WriteString(EOE)
 	return builder.String()
 }
 
@@ -33,25 +36,33 @@ func (entry *eventEntryImpl) FormatAsRkMin(event Event) string {
 
 	builder := bytes.Buffer{}
 
-	builder.WriteString(EventScopeDelimiter + "\n")
+	builder.WriteString(ScopeDelimiter + "\n")
 
-	builder.WriteString("timing=")
-	eventImpl.appendTimers(&builder)
-	builder.WriteString("\n")
+	if len(eventImpl.tracker) > 0 {
+		builder.WriteString("timing=")
+		eventImpl.appendTimers(&builder)
+		builder.WriteString("\n")
+	}
 
-	builder.WriteString("counters=")
-	eventImpl.appendCounters(&builder)
-	builder.WriteString("\n")
+	if eventImpl.hasCounters() {
+		builder.WriteString("counters=")
+		eventImpl.appendCounters(&builder)
+		builder.WriteString("\n")
+	}
 
-	builder.WriteString("kvs=")
-	eventImpl.appendKvs(&builder)
-	builder.WriteString("\n")
+	if eventImpl.hasKvs() {
+		builder.WriteString("kvs=")
+		eventImpl.appendKvs(&builder)
+		builder.WriteString("\n")
+	}
 
-	builder.WriteString("errors=")
-	eventImpl.appendErrs(&builder)
-	builder.WriteString("\n")
+	if eventImpl.hasErrs() {
+		builder.WriteString("errors=")
+		eventImpl.appendErrs(&builder)
+		builder.WriteString("\n")
+	}
 
-	builder.WriteString(EventEOE)
+	builder.WriteString(EOE)
 	return builder.String()
 }
 
@@ -189,7 +200,7 @@ func (entry *eventEntryImpl) addPredifinedValues(builder *bytes.Buffer, event *E
 	}
 
 	// err
-	if event.hasCounters() {
+	if event.hasErrs() {
 		builder.WriteString("errors=")
 		event.appendErrs(builder)
 		builder.WriteString("\n")
@@ -205,6 +216,9 @@ func (entry *eventEntryImpl) addPredifinedValues(builder *bytes.Buffer, event *E
 
 	// Operation
 	builder.WriteString("operation=" + event.GetOperation() + "\n")
+
+	// Status
+	builder.WriteString("event_status=" + event.GetEventStatus().String() + "\n")
 
 	// History
 	if event.producesHistory() && event.GetEventHistory().builder.Len() > 0 {

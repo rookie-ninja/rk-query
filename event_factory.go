@@ -1,3 +1,7 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rk_query
 
 import (
@@ -12,7 +16,7 @@ type EventFactory struct {
 	AppName           string
 	HostName          string
 	Format            Format
-	Minimal			  bool
+	Minimal           bool
 	ZapLogger         *zap.Logger
 	Listeners         []eventEntryListener
 	DefaultNameValues map[string]string
@@ -25,10 +29,10 @@ func NewEventFactory(logger *zap.Logger) (*EventFactory, error) {
 
 	return &EventFactory{
 		TimeSource:        &RealTimeSource{},
-		AppName:   		   EventUnknownApplication,
+		AppName:           Unknown,
 		HostName:          obtainHostName(),
 		ZapLogger:         logger,
-		Format: 		   RK,
+		Format:            RK,
 		Minimal:           false,
 		Listeners:         make([]eventEntryListener, 0),
 		DefaultNameValues: make(map[string]string),
@@ -64,7 +68,7 @@ func obtainHostName() string {
 
 	// In this version, we will ignore errors returned by OS
 	if err != nil {
-		hostName = EventUnknownHostName
+		hostName = Unknown
 	}
 
 	return hostName

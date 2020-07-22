@@ -1,3 +1,7 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rk_query
 
 import (
@@ -270,9 +274,9 @@ func (event *EventImpl) AppendKv(name, value string) {
 	existingValue, contains := event.kvs[name]
 	if !contains {
 		event.kvs[name] = value
-	} else if len(existingValue) >= EventMaxHistoryLength {
-		if !strings.HasSuffix(existingValue, EventCommaTruncatedString) {
-			event.kvs[name] = existingValue + EventCommaTruncatedString
+	} else if len(existingValue) >= MaxHistoryLength {
+		if !strings.HasSuffix(existingValue, CommaTruncated) {
+			event.kvs[name] = existingValue + CommaTruncated
 		}
 	} else {
 		event.kvs[name] = existingValue + "," + value
@@ -305,11 +309,6 @@ func (event *EventImpl) RecordHistoryEvent(name string) {
 }
 
 func (event *EventImpl) WriteLog() {
-	// finish any Time Aggregators that may not be done
-	for _, v := range event.tracker {
-		v.Finish(event.timeSource)
-	}
-
 	entry := eventEntryImpl{}
 
 	if event.format == JSON {
@@ -324,6 +323,11 @@ func (event *EventImpl) WriteLog() {
 		} else {
 			event.zapLogger.Info(event.toRkFormat())
 		}
+	}
+
+	// finish any Time Aggregators that may not be done
+	for _, v := range event.tracker {
+		v.Finish(event.timeSource)
 	}
 
 	for _, value := range event.listeners {
@@ -445,7 +449,6 @@ func (event *EventImpl) appendErrs(builder *bytes.Buffer) {
 	}
 }
 
-
 func (event *EventImpl) appendTimers(builder *bytes.Buffer) {
 	var isFirst = true
 
@@ -455,7 +458,7 @@ func (event *EventImpl) appendTimers(builder *bytes.Buffer) {
 		} else {
 			builder.WriteByte(',')
 		}
-		str, _ := v.StringWithTimeSource(event.timeSource)
+		str := v.StringWithTimeSource(event.timeSource)
 		builder.WriteString(str)
 	}
 }

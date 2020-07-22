@@ -5,14 +5,13 @@
 package rk_query
 
 const (
-	EventScopeDelimiter       string = "------------------------------------------------------------------------"
-	EventEOE                  string = "EOE"
-	EventUnknownApplication   string = "Unknown Application"
-	EventUnknownHostName      string = "Unknown Hostname"
-	EventTruncatedString      string = "TRUNCATED"
-	EventCommaTruncatedString string = ",TRUNCATED"
-	EventMaxHistoryLength     int    = 1024
-	EventOperationKey         string = "operation"
-	EventStatusKey            string = "status"
-	EventOpenMarker           string = "-open-"
+	ScopeDelimiter   string = "------------------------------------------------------------------------"
+	EOE              string = "EOE"
+	Unknown          string = "Unknown"
+	Truncated        string = "TRUNCATED"
+	CommaTruncated   string = ",TRUNCATED"
+	MaxHistoryLength int    = 1024
+	OperationKey     string = "operation"
+	StatusKey        string = "status"
+	OpenMarker       string = "-open-"
 )
