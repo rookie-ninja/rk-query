@@ -1,3 +1,7 @@
+// Copyright (c) 2020 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package main
 
 import (
@@ -52,7 +56,7 @@ func withEventHelper() {
 
 	logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON, lumber)
 
-	helper := rk_query.NewEventHelperWithLogger("fake", logger)
+	helper := rk_query.NewEventHelperWithZapLogger("fake", &rk_query.RealTimeSource{}, logger)
 	event := helper.Start("my-op")
 	event.SetRemoteAddr("1.1.1.1")
 	event.StartTimer("t1")
@@ -108,7 +112,7 @@ func withRawEventRkFormat() {
 	fac := rk_query.EventFactory{
 		TimeSource: &ts,
 		AppName:    "my-app",
-		Format:     rk_query.RK,
+		Format:     rk_query.JSON,
 		Minimal:    false,
 		ZapLogger:  logger,
 		HostName:   "my-host",

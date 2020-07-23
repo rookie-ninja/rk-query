@@ -5,7 +5,6 @@
 package rk_query
 
 import (
-	"github.com/juju/errors"
 	"go.uber.org/zap"
 	"os"
 )
@@ -19,24 +18,20 @@ type EventFactory struct {
 	Minimal           bool
 	ZapLogger         *zap.Logger
 	Listeners         []eventEntryListener
-	DefaultNameValues map[string]string
+	DefaultKvs        map[string]string
 }
 
-func NewEventFactory(logger *zap.Logger) (*EventFactory, error) {
-	if logger == nil {
-		return nil, errors.NewNotValid(nil, "zap logger is nil")
-	}
-
+func NewEventFactory(app string, ts TimeSource, logger *zap.Logger) *EventFactory {
 	return &EventFactory{
-		TimeSource:        &RealTimeSource{},
-		AppName:           Unknown,
+		TimeSource:        ts,
+		AppName:           app,
 		HostName:          obtainHostName(),
 		ZapLogger:         logger,
 		Format:            RK,
 		Minimal:           false,
 		Listeners:         make([]eventEntryListener, 0),
-		DefaultNameValues: make(map[string]string),
-	}, nil
+		DefaultKvs: make(map[string]string),
+	}
 }
 
 func (factory *EventFactory) CreateEvent() Event {
@@ -44,7 +39,7 @@ func (factory *EventFactory) CreateEvent() Event {
 		factory.TimeSource,
 		factory.AppName,
 		factory.HostName,
-		factory.DefaultNameValues,
+		factory.DefaultKvs,
 		factory.ZapLogger,
 		factory.Format,
 		factory.Minimal,

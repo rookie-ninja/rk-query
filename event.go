@@ -27,7 +27,7 @@ type Event interface {
 	// Reset all the event data fields
 	Reset()
 
-	GetEventStatus() eventDataStatus
+	GetEventStatus() eventStatus
 
 	GetEndTimeMS() int64
 
@@ -62,13 +62,15 @@ type Event interface {
 
 	AddErr(error)
 
+	GetErrCount(error) int64
+
 	AddKv(string, string)
 
 	AppendKv(string, string)
 
 	GetValue(string) string
 
-	FinishCurrentEvent(string)
+	FinishCurrentTimer(string)
 
 	// Inserts an event into the event history.
 	RecordHistoryEvent(string)
@@ -83,15 +85,15 @@ type Event interface {
 	GetEventHistory() *eventHistory
 }
 
-type eventDataStatus int
+type eventStatus int
 
 const (
-	notStarted eventDataStatus = 0
-	inProgress eventDataStatus = 1
-	ended      eventDataStatus = 2
+	notStarted eventStatus = 0
+	inProgress eventStatus = 1
+	ended      eventStatus = 2
 )
 
-func (status eventDataStatus) String() string {
+func (status eventStatus) String() string {
 	names := [...]string{
 		"NotStarted",
 		"InProgress",

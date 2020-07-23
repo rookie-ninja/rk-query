@@ -33,7 +33,7 @@ type EventImpl struct {
 	eventHistory *eventHistory
 	endTimeMS    int64
 	startTimeMS  int64
-	status       eventDataStatus
+	status       eventStatus
 	counters     map[string]int64
 	kvs          map[string]string
 	errors       map[string]int64
@@ -77,10 +77,16 @@ func NewEventImpl(
 }
 
 func (event *EventImpl) GetAppName() string {
+	if len(event.appName) < 1 {
+		return Unknown
+	}
 	return event.appName
 }
 
 func (event *EventImpl) GetHostName() string {
+	if len(event.hostName) < 1 {
+		return Unknown
+	}
 	return event.hostName
 }
 
@@ -89,6 +95,9 @@ func (event *EventImpl) GetZapLogger() *zap.Logger {
 }
 
 func (event *EventImpl) GetOperation() string {
+	if len(event.operation) < 1 {
+		return Unknown
+	}
 	return event.operation
 }
 
@@ -109,7 +118,7 @@ func (event *EventImpl) Reset() {
 	}
 }
 
-func (event *EventImpl) GetEventStatus() eventDataStatus {
+func (event *EventImpl) GetEventStatus() eventStatus {
 	return event.status
 }
 
@@ -166,7 +175,7 @@ func (event *EventImpl) StartTimer(name string) {
 }
 
 func (event *EventImpl) EndTimer(name string) {
-	if !event.inProgress() {
+	if !event.inProgress() || len(name) < 1 {
 		return
 	}
 
@@ -190,7 +199,7 @@ func (event *EventImpl) UpdateTimer(name string, elapsedMS int64) {
 }
 
 func (event *EventImpl) UpdateTimerWithSample(name string, elapsedMS, sample int64) {
-	if !event.inProgress() {
+	if !event.inProgress() || len(name) < 1 {
 		return
 	}
 
@@ -210,8 +219,8 @@ func (event *EventImpl) UpdateTimerWithSample(name string, elapsedMS, sample int
 	tracker.ElapseWithSample(elapsedMS, sample)
 }
 
-func (event *EventImpl) GetTimeElapsedMS(timerName string) int64 {
-	timer, contains := event.tracker[timerName]
+func (event *EventImpl) GetTimeElapsedMS(name string) int64 {
+	timer, contains := event.tracker[name]
 	if !contains {
 		return -1
 	}
@@ -237,10 +246,18 @@ func (event *EventImpl) GetCounter(name string) int64 {
 }
 
 func (event *EventImpl) SetCounter(name string, value int64) {
+	if len(name) < 1 {
+		return
+	}
+
 	event.counters[name] = value
 }
 
 func (event *EventImpl) InCCounter(name string, delta int64) {
+	if len(name) < 1 {
+		return
+	}
+
 	oldValue, contains := event.counters[name]
 
 	if !contains {
@@ -253,6 +270,10 @@ func (event *EventImpl) InCCounter(name string, delta int64) {
 }
 
 func (event *EventImpl) AddKv(name, value string) {
+	if len(name) < 1 || len(value) < 1 {
+		return
+	}
+
 	event.kvs[name] = value
 }
 
@@ -270,7 +291,25 @@ func (event *EventImpl) AddErr(err error) {
 	}
 }
 
+func (event *EventImpl) GetErrCount(err error) int64 {
+	name := reflect.TypeOf(err).Name()
+	if len(name) < 1 {
+		name = "std-err"
+	}
+
+	existingValue, contains := event.errors[name]
+	if contains {
+		return existingValue
+	}
+
+	return 0
+}
+
 func (event *EventImpl) AppendKv(name, value string) {
+	if len(name) < 1 || len(value) < 1 {
+		return
+	}
+
 	existingValue, contains := event.kvs[name]
 	if !contains {
 		event.kvs[name] = value
@@ -288,14 +327,14 @@ func (event *EventImpl) GetValue(name string) string {
 	return value
 }
 
-func (event *EventImpl) FinishCurrentEvent(name string) {
+func (event *EventImpl) FinishCurrentTimer(name string) {
 	if !event.inProgress() {
 		return
 	}
 
 	nowMS := event.timeSource.CurrentTimeMS()
 
-	event.UpdateTimer(name, nowMS-event.startTimeMS)
+	event.UpdateTimer(name, nowMS - event.startTimeMS)
 
 	if event.producesHistory() {
 		event.eventHistory.elapsedMS(name, nowMS-event.startTimeMS)
@@ -313,9 +352,9 @@ func (event *EventImpl) WriteLog() {
 
 	if event.format == JSON {
 		if event.minimal {
-			entry.FormatAsJsonMin(event).Info("")
+			entry.FormatAsZapMin(event).Info("")
 		} else {
-			entry.FormatAsJson(event).Info("")
+			entry.FormatAsZap(event).Info("")
 		}
 	} else {
 		if event.minimal {

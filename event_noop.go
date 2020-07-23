@@ -28,7 +28,7 @@ func (NoopEventData) SetOperation(string) {}
 
 func (NoopEventData) Reset() {}
 
-func (NoopEventData) GetEventStatus() eventDataStatus {
+func (NoopEventData) GetEventStatus() eventStatus {
 	return 0
 }
 
@@ -74,13 +74,17 @@ func (NoopEventData) AddKv(string, string) {}
 
 func (NoopEventData) AddErr(error) {}
 
+func (NoopEventData) GetErrCount(error) int64 {
+	return 0
+}
+
 func (NoopEventData) AppendKv(string, string) {}
 
 func (NoopEventData) GetValue(string) string {
 	return ""
 }
 
-func (NoopEventData) FinishCurrentEvent(string) {}
+func (NoopEventData) FinishCurrentTimer(string) {}
 
 func (NoopEventData) RecordHistoryEvent(string) {}
 

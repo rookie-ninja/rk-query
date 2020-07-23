@@ -8,19 +8,18 @@ import "go.uber.org/zap"
 
 // A helper function for easy use of EventData
 type EventHelper struct {
-	factory    *EventFactory
+	Factory    *EventFactory
 	TimeSource TimeSource
 }
 
-func NewEventHelperWithLogger(appName string, logger *zap.Logger) *EventHelper {
-	factory, _ := NewEventFactory(logger)
-	factory.AppName = appName
+func NewEventHelperWithZapLogger(appName string, ts TimeSource, logger *zap.Logger) *EventHelper {
+	factory := NewEventFactory(appName, ts, logger)
 
-	return &EventHelper{factory, &RealTimeSource{}}
+	return &EventHelper{factory, ts}
 }
 
 func (helper *EventHelper) Start(operationName string) Event {
-	event := helper.factory.CreateEvent()
+	event := helper.Factory.CreateEvent()
 
 	event.SetOperation(operationName)
 	event.SetStartTimeMS(helper.TimeSource.CurrentTimeMS())
@@ -47,5 +46,6 @@ func (helper *EventHelper) FinishWithError(event Event, err error) {
 		helper.FinishWithCond(event, true)
 	}
 
+	event.AddErr(err)
 	helper.FinishWithCond(event, false)
 }

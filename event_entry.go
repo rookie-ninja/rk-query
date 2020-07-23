@@ -6,9 +6,14 @@ package rk_query
 
 import "go.uber.org/zap"
 
-// Immutable event entries.
+// Currently, we support RK format and Zap logger json format
+// More logger option would be applied
 type eventEntry interface {
 	FormatAsRk(Event) string
 
-	FormatAsJson(Event) *zap.Logger
+	FormatAsRkMin(Event) string
+
+	FormatAsZap(Event) *zap.Logger
+
+	FormatAsZapMin(Event) *zap.Logger
 }

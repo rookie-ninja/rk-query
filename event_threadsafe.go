@@ -63,7 +63,7 @@ func (event *ThreadSafeEventImpl) Reset() {
 	event.delegate.Reset()
 }
 
-func (event *ThreadSafeEventImpl) GetEventStatus() eventDataStatus {
+func (event *ThreadSafeEventImpl) GetEventStatus() eventStatus {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
@@ -182,6 +182,13 @@ func (event *ThreadSafeEventImpl) AddErr(err error) {
 	event.delegate.AddErr(err)
 }
 
+func (event *ThreadSafeEventImpl) GetErrCount(err error) int64 {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetErrCount(err)
+}
+
 func (event *ThreadSafeEventImpl) AppendKv(key, value string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -196,11 +203,11 @@ func (event *ThreadSafeEventImpl) GetValue(key string) string {
 	return event.GetValue(key)
 }
 
-func (event *ThreadSafeEventImpl) FinishCurrentEvent(name string) {
+func (event *ThreadSafeEventImpl) FinishCurrentTimer(name string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.FinishCurrentEvent(name)
+	event.delegate.FinishCurrentTimer(name)
 }
 
 func (event *ThreadSafeEventImpl) RecordHistoryEvent(name string) {

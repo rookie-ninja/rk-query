@@ -23,7 +23,7 @@ func (entry *eventEntryImpl) FormatAsRk(event Event) string {
 
 	builder.WriteString(ScopeDelimiter + "\n")
 
-	entry.addPredifinedValues(&builder, eventImpl)
+	entry.applyRkFormat(&builder, eventImpl)
 
 	builder.WriteString(EOE)
 	return builder.String()
@@ -66,7 +66,7 @@ func (entry *eventEntryImpl) FormatAsRkMin(event Event) string {
 	return builder.String()
 }
 
-func (entry *eventEntryImpl) FormatAsJson(event Event) *zap.Logger {
+func (entry *eventEntryImpl) FormatAsZap(event Event) *zap.Logger {
 	logger := event.GetZapLogger()
 	impl := event.(*EventImpl)
 	fields := make([]zapcore.Field, 0)
@@ -108,7 +108,7 @@ func (entry *eventEntryImpl) FormatAsJson(event Event) *zap.Logger {
 	return logger.With(fields...)
 }
 
-func (entry *eventEntryImpl) FormatAsJsonMin(event Event) *zap.Logger {
+func (entry *eventEntryImpl) FormatAsZapMin(event Event) *zap.Logger {
 	logger := event.GetZapLogger()
 	impl := event.(*EventImpl)
 
@@ -165,7 +165,7 @@ func (entry *eventEntryImpl) getTimerAsZapFields(event *EventImpl) []zapcore.Fie
 	return fields
 }
 
-func (entry *eventEntryImpl) addPredifinedValues(builder *bytes.Buffer, event *EventImpl) {
+func (entry *eventEntryImpl) applyRkFormat(builder *bytes.Buffer, event *EventImpl) {
 	// EndTime
 	builder.WriteString("end_time=" + time.Unix(0, event.GetEndTimeMS()*1000000).Format(time.RFC3339) + "\n")
 
