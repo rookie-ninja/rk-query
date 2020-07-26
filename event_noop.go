@@ -6,98 +6,98 @@ package rk_query
 
 import "go.uber.org/zap"
 
-type NoopEventData struct{}
+type NoopEvent struct{}
 
-func (NoopEventData) GetAppName() string {
+func (NoopEvent) GetAppName() string {
 	return ""
 }
 
-func (NoopEventData) GetHostName() string {
+func (NoopEvent) GetHostName() string {
 	return ""
 }
 
-func (NoopEventData) GetZapLogger() *zap.Logger {
+func (NoopEvent) GetZapLogger() *zap.Logger {
 	return nil
 }
 
-func (NoopEventData) GetOperation() string {
+func (NoopEvent) GetOperation() string {
 	return ""
 }
 
-func (NoopEventData) SetOperation(string) {}
+func (NoopEvent) SetOperation(string) {}
 
-func (NoopEventData) Reset() {}
+func (NoopEvent) Reset() {}
 
-func (NoopEventData) GetEventStatus() eventStatus {
+func (NoopEvent) GetEventStatus() eventStatus {
 	return 0
 }
 
-func (NoopEventData) GetEndTimeMS() int64 {
+func (NoopEvent) GetEndTimeMS() int64 {
 	return 0
 }
 
-func (NoopEventData) GetStartTimeMS() int64 {
+func (NoopEvent) GetStartTimeMS() int64 {
 	return 0
 }
 
-func (NoopEventData) SetStartTimeMS(int64) {}
+func (NoopEvent) SetStartTimeMS(int64) {}
 
-func (NoopEventData) SetEndTimeMS(int64) {}
+func (NoopEvent) SetEndTimeMS(int64) {}
 
-func (NoopEventData) StartTimer(string) {}
+func (NoopEvent) StartTimer(string) {}
 
-func (NoopEventData) EndTimer(string) {}
+func (NoopEvent) EndTimer(string) {}
 
-func (NoopEventData) UpdateTimer(string, int64) {}
+func (NoopEvent) UpdateTimer(string, int64) {}
 
-func (NoopEventData) UpdateTimerWithSample(string, int64, int64) {}
+func (NoopEvent) UpdateTimerWithSample(string, int64, int64) {}
 
-func (NoopEventData) GetTimeElapsedMS(string) int64 {
+func (NoopEvent) GetTimeElapsedMS(string) int64 {
 	return 0
 }
 
-func (NoopEventData) GetRemoteAddr() string {
+func (NoopEvent) GetRemoteAddr() string {
 	return ""
 }
 
-func (NoopEventData) SetRemoteAddr(string) {}
+func (NoopEvent) SetRemoteAddr(string) {}
 
-func (NoopEventData) GetCounter(string) int64 {
+func (NoopEvent) GetCounter(string) int64 {
 	return 0
 }
 
-func (NoopEventData) SetCounter(string, int64) {}
+func (NoopEvent) SetCounter(string, int64) {}
 
-func (NoopEventData) InCCounter(string, int64) {}
+func (NoopEvent) InCCounter(string, int64) {}
 
-func (NoopEventData) AddKv(string, string) {}
+func (NoopEvent) AddKv(string, string) {}
 
-func (NoopEventData) AddErr(error) {}
+func (NoopEvent) AddErr(error) {}
 
-func (NoopEventData) GetErrCount(error) int64 {
+func (NoopEvent) GetErrCount(error) int64 {
 	return 0
 }
 
-func (NoopEventData) AppendKv(string, string) {}
+func (NoopEvent) AppendKv(string, string) {}
 
-func (NoopEventData) GetValue(string) string {
+func (NoopEvent) GetValue(string) string {
 	return ""
 }
 
-func (NoopEventData) FinishCurrentTimer(string) {}
+func (NoopEvent) FinishCurrentTimer(string) {}
 
-func (NoopEventData) RecordHistoryEvent(string) {}
+func (NoopEvent) RecordHistoryEvent(string) {}
 
-func (NoopEventData) WriteLog() {}
+func (NoopEvent) WriteLog() {}
 
-func (NoopEventData) ToZapFieldsMin() []zap.Field {
+func (NoopEvent) ToZapFieldsMin() []zap.Field {
 	return make([]zap.Field, 0)
 }
 
-func (NoopEventData) ToZapFields() []zap.Field {
+func (NoopEvent) ToZapFields() []zap.Field {
 	return make([]zap.Field, 0)
 }
 
-func (NoopEventData) GetEventHistory() *eventHistory {
+func (NoopEvent) GetEventHistory() *eventHistory {
 	return nil
 }
