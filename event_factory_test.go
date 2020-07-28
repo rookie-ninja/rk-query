@@ -46,5 +46,5 @@ func TestEventFactory_CreateNoopEvent(t *testing.T) {
 	fac := NewEventFactory("", &RealTimeSource{}, zap.NewNop())
 	event := fac.CreateNoopEvent()
 	assert.NotNil(t, event)
-	assert.IsType(t, &NoopEventData{}, event)
+	assert.IsType(t, &NoopEvent{}, event)
 }

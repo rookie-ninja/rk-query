@@ -54,7 +54,7 @@ func (factory *EventFactory) CreateThreadSafeEvent() Event {
 }
 
 func (factory *EventFactory) CreateNoopEvent() Event {
-	event := NoopEventData{}
+	event := NoopEvent{}
 	return &event
 }
 
