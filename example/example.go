@@ -5,194 +5,99 @@
 package main
 
 import (
-	rk_logger "github.com/rookie-ninja/rk-logger"
-	rk_query "github.com/rookie-ninja/rk-query"
+	"github.com/rookie-ninja/rk-logger"
+	"github.com/rookie-ninja/rk-query"
+	"go.uber.org/zap"
 	"time"
 )
 
+var (
+	bytes = []byte(`{
+     "level": "info",
+     "encoding": "console",
+     "outputPaths": ["stdout"],
+     "errorOutputPaths": ["stderr"],
+     "initialFields": {},
+     "encoderConfig": {
+       "messageKey": "msg",
+       "levelKey": "",
+       "nameKey": "",
+       "timeKey": "",
+       "callerKey": "",
+       "stacktraceKey": "",
+       "callstackKey": "",
+       "errorKey": "",
+       "timeEncoder": "iso8601",
+       "fileKey": "",
+       "levelEncoder": "capital",
+       "durationEncoder": "second",
+       "callerEncoder": "full",
+       "nameEncoder": "full"
+     },
+    "maxsize": 1,
+    "maxage": 7,
+    "maxbackups": 3,
+    "localtime": true,
+    "compress": true
+   }`)
+)
+
 func main() {
-	withRawEventRkFormat()
-	withRawEventRkMinFormat()
-	withEventHelper()
+	withEventZapRkFormat()
+	withEventZapJSONFormat()
+	withEventZapHelper()
 }
 
-func withEventHelper() {
-	zapBytes := []byte(`{
-      "level": "info",
-      "encoding": "console",
-      "outputPaths": ["stdout"],
-      "errorOutputPaths": ["stderr"],
-      "initialFields": {},
-      "encoderConfig": {
-        "messageKey": "msg",
-        "levelKey": "",
-        "nameKey": "",
-        "timeKey": "",
-        "callerKey": "",
-        "stacktraceKey": "",
-        "callstackKey": "",
-        "errorKey": "",
-        "timeEncoder": "iso8601",
-        "fileKey": "",
-        "levelEncoder": "capital",
-        "durationEncoder": "second",
-        "callerEncoder": "full",
-        "nameEncoder": "full"
-      }
-    }`)
+func withEventZapJSONFormat() {
+	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	lumberBytes := []byte(`{
-     "maxsize": 1,
-     "maxage": 7,
-     "maxbackups": 3,
-     "localtime": true,
-     "compress": true
-    }`)
+	fac := rk_query.NewEventZapFactory(
+		rk_query.WithAppName("appName"),
+		rk_query.WithFormat(rk_query.JSON),
+		rk_query.WithOperation("op"),
+		rk_query.WithLogger(logger))
+	event := fac.CreateEventZap()
 
-	lumber, err := rk_logger.NewLumberjackLoggerWithBytes(lumberBytes, rk_logger.JSON)
-	if err != nil {
-		panic(err)
-	}
-
-	logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON, lumber)
-
-	helper := rk_query.NewEventHelperWithZapLogger("fake", &rk_query.RealTimeSource{}, logger)
-	event := helper.Start("my-op")
-	event.SetRemoteAddr("1.1.1.1")
+	event.SetStartTime(time.Now())
 	event.StartTimer("t1")
 	time.Sleep(1 * time.Second)
 	event.EndTimer("t1")
-
+	event.AddPair("key", "value")
+	event.SetCounter("count", 1)
+	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
 	event.AddErr(MyError{})
+	event.SetEndTime(time.Now())
+	event.WriteLog()
+}
+
+func withEventZapRkFormat() {
+	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+
+	fac := rk_query.NewEventZapFactory(
+		rk_query.WithAppName("appName"),
+		rk_query.WithFormat(rk_query.RK),
+		rk_query.WithOperation("op"),
+		rk_query.WithLogger(logger))
+	event := fac.CreateEventZap()
+
+	event.SetStartTime(time.Now())
+	event.StartTimer("t1")
+	time.Sleep(1 * time.Second)
+	event.EndTimer("t1")
+	event.AddPair("key", "value")
+	event.SetCounter("count", 1)
+	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
+	event.AddErr(MyError{})
+	event.SetEndTime(time.Now())
+	event.WriteLog()
+}
+
+func withEventZapHelper() {
+	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+	helper := rk_query.NewEventZapHelper(rk_query.NewEventZapFactory(rk_query.WithLogger(logger)))
+
+	event := helper.Start("op")
 	helper.Finish(event)
-}
-
-func withRawEventRkFormat() {
-	zapBytes := []byte(`{
-      "level": "info",
-      "encoding": "console",
-      "outputPaths": ["stdout"],
-      "errorOutputPaths": ["stderr"],
-      "initialFields": {},
-      "encoderConfig": {
-        "messageKey": "msg",
-        "levelKey": "",
-        "nameKey": "",
-        "timeKey": "",
-        "callerKey": "",
-        "stacktraceKey": "",
-        "callstackKey": "",
-        "errorKey": "",
-        "timeEncoder": "iso8601",
-        "fileKey": "",
-        "levelEncoder": "capital",
-        "durationEncoder": "second",
-        "callerEncoder": "full",
-        "nameEncoder": "full"
-      }
-    }`)
-
-	lumberBytes := []byte(`{
-     "maxsize": 1,
-     "maxage": 7,
-     "maxbackups": 3,
-     "localtime": true,
-     "compress": true
-    }`)
-
-	lumber, err := rk_logger.NewLumberjackLoggerWithBytes(lumberBytes, rk_logger.JSON)
-	if err != nil {
-		panic(err)
-	}
-
-	logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON, lumber)
-
-	ts := rk_query.RealTimeSource{}
-
-	fac := rk_query.EventFactory{
-		TimeSource: &ts,
-		AppName:    "my-app",
-		Format:     rk_query.JSON,
-		Minimal:    false,
-		ZapLogger:  logger,
-		HostName:   "my-host",
-	}
-
-	event := fac.CreateEvent()
-	event.SetRemoteAddr("1.1.1.1")
-	event.SetOperation("my-op")
-	event.SetStartTimeMS(ts.CurrentTimeMS())
-	event.StartTimer("t1")
-	time.Sleep(1 * time.Second)
-	event.EndTimer("t1")
-
-	event.AddErr(MyError{})
-	event.SetEndTimeMS(ts.CurrentTimeMS())
-	event.WriteLog()
-}
-
-func withRawEventRkMinFormat() {
-	zapBytes := []byte(`{
-      "level": "info",
-      "encoding": "console",
-      "outputPaths": ["stdout"],
-      "errorOutputPaths": ["stderr"],
-      "initialFields": {},
-      "encoderConfig": {
-        "messageKey": "msg",
-        "levelKey": "",
-        "nameKey": "",
-        "timeKey": "",
-        "callerKey": "",
-        "stacktraceKey": "",
-        "callstackKey": "",
-        "errorKey": "",
-        "timeEncoder": "iso8601",
-        "fileKey": "",
-        "levelEncoder": "capital",
-        "durationEncoder": "second",
-        "callerEncoder": "full",
-        "nameEncoder": "full"
-      }
-    }`)
-
-	lumberBytes := []byte(`{
-     "maxsize": 1,
-     "maxage": 7,
-     "maxbackups": 3,
-     "localtime": true,
-     "compress": true
-    }`)
-
-	lumber, err := rk_logger.NewLumberjackLoggerWithBytes(lumberBytes, rk_logger.JSON)
-	if err != nil {
-		panic(err)
-	}
-
-	logger, _, err := rk_logger.NewZapLoggerWithBytes(zapBytes, rk_logger.JSON, lumber)
-
-	ts := rk_query.RealTimeSource{}
-
-	fac := rk_query.EventFactory{
-		TimeSource: &ts,
-		AppName:    "my-app",
-		Format:     rk_query.RK,
-		Minimal:    true,
-		ZapLogger:  logger,
-		HostName:   "my-host",
-	}
-
-	event := fac.CreateEvent()
-	event.SetRemoteAddr("1.1.1.1")
-	event.SetOperation("my-op")
-	event.SetStartTimeMS(ts.CurrentTimeMS())
-	event.StartTimer("t1")
-	time.Sleep(1 * time.Second)
-	event.EndTimer("t1")
-
-	event.AddErr(MyError{})
-	event.SetEndTimeMS(ts.CurrentTimeMS())
-	event.WriteLog()
 }
 
 type MyError struct {

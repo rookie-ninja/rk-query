@@ -6,56 +6,104 @@ package rk_query
 
 import (
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"os"
 )
 
-// Not thread safe!!!
-type EventFactory struct {
-	TimeSource        TimeSource
-	AppName           string
-	HostName          string
-	Format            Format
-	Minimal           bool
-	ZapLogger         *zap.Logger
-	Listeners         []eventEntryListener
-	DefaultKvs        map[string]string
-}
+type EventZapOption func(*EventZap)
 
-func NewEventFactory(app string, ts TimeSource, logger *zap.Logger) *EventFactory {
-	return &EventFactory{
-		TimeSource:        ts,
-		AppName:           app,
-		HostName:          obtainHostName(),
-		ZapLogger:         logger,
-		Format:            RK,
-		Minimal:           false,
-		Listeners:         make([]eventEntryListener, 0),
-		DefaultKvs: make(map[string]string),
+func WithLogger(logger *zap.Logger) EventZapOption {
+	return func(event *EventZap) {
+		event.logger = logger
 	}
 }
 
-func (factory *EventFactory) CreateEvent() Event {
-	event := NewEventImpl(
-		factory.TimeSource,
-		factory.AppName,
-		factory.HostName,
-		factory.DefaultKvs,
-		factory.ZapLogger,
-		factory.Format,
-		factory.Minimal,
-		factory.Listeners,
-		false)
+func WithFormat(format Format) EventZapOption {
+	return func(event *EventZap) {
+		event.format = format
+	}
+}
+
+func WithQuietMode(quietMode bool) EventZapOption {
+	return func(event *EventZap) {
+		event.quietMode = quietMode
+	}
+}
+
+func WithAppName(appName string) EventZapOption {
+	return func(event *EventZap) {
+		event.appName = appName
+	}
+}
+
+func WithHostname(hostname string) EventZapOption {
+	return func(event *EventZap) {
+		event.hostname = hostname
+	}
+}
+
+func WithOperation(operation string) EventZapOption {
+	return func(event *EventZap) {
+		event.operation = operation
+	}
+}
+
+func WithRemoteAddr(addr string) EventZapOption {
+	return func(event *EventZap) {
+		event.remoteAddr = addr
+	}
+}
+
+func WithFields(fields []zap.Field) EventZapOption {
+	return func(event *EventZap) {
+		event.fields = append(event.fields, fields...)
+	}
+}
+
+// Not thread safe!!!
+type EventZapFactory struct {
+	options []EventZapOption
+}
+
+func NewEventZapFactory(option ...EventZapOption) *EventZapFactory {
+	return &EventZapFactory{
+		options: option,
+	}
+}
+
+func (factory *EventZapFactory) CreateEventZap(options ...EventZapOption) *EventZap {
+	event := &EventZap{
+		logger:     zap.NewNop(),
+		format:     RK,
+		status:     notStarted,
+		appName:    Unknown,
+		hostname:   obtainHostName(),
+		remoteAddr: Unknown,
+		operation:  Unknown,
+		counters:   zapcore.NewMapObjectEncoder(),
+		pairs:      zapcore.NewMapObjectEncoder(),
+		errors:     zapcore.NewMapObjectEncoder(),
+		fields:     make([]zap.Field, 0),
+		tracker:    make(map[string]*timeTracker),
+	}
+
+	for i := range factory.options {
+		opt := factory.options[i]
+		opt(event)
+	}
+
+	for i := range options {
+		opt := factory.options[i]
+		opt(event)
+	}
+
+	event.logger.Core().Sync()
+
+	if !event.quietMode {
+		event.eventHistory = newEventHistory()
+	}
 
 	return event
-}
-
-func (factory *EventFactory) CreateThreadSafeEvent() Event {
-	return NewThreadSafeEventImpl(factory.CreateEvent())
-}
-
-func (factory *EventFactory) CreateNoopEvent() Event {
-	event := NoopEvent{}
-	return &event
 }
 
 func obtainHostName() string {

@@ -4,34 +4,36 @@
 // license that can be found in the LICENSE file.
 package rk_query
 
-import "go.uber.org/zap"
+import (
+	"time"
+)
 
 // A helper function for easy use of EventData
-type EventHelper struct {
-	Factory    *EventFactory
-	TimeSource TimeSource
+type EventZapHelper struct {
+	Factory *EventZapFactory
 }
 
-func NewEventHelperWithZapLogger(appName string, ts TimeSource, logger *zap.Logger) *EventHelper {
-	factory := NewEventFactory(appName, ts, logger)
-
-	return &EventHelper{factory, ts}
+func NewEventZapHelper(factory *EventZapFactory) *EventZapHelper {
+	if factory == nil {
+		factory = NewEventZapFactory()
+	}
+	return &EventZapHelper{factory}
 }
 
-func (helper *EventHelper) Start(operationName string) Event {
-	event := helper.Factory.CreateEvent()
+func (helper *EventZapHelper) Start(operation string) *EventZap {
+	event := helper.Factory.CreateEventZap()
 
-	event.SetOperation(operationName)
-	event.SetStartTimeMS(helper.TimeSource.CurrentTimeMS())
+	event.SetOperation(operation)
+	event.SetStartTime(time.Now())
 	return event
 }
 
-func (helper *EventHelper) Finish(event Event) {
-	event.SetEndTimeMS(helper.TimeSource.CurrentTimeMS())
+func (helper *EventZapHelper) Finish(event *EventZap) {
+	event.SetEndTime(time.Now())
 	event.WriteLog()
 }
 
-func (helper *EventHelper) FinishWithCond(event Event, success bool) {
+func (helper *EventZapHelper) FinishWithCond(event *EventZap, success bool) {
 	if success {
 		event.SetCounter("success", 1)
 	} else {
@@ -41,7 +43,7 @@ func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	helper.Finish(event)
 }
 
-func (helper *EventHelper) FinishWithError(event Event, err error) {
+func (helper *EventZapHelper) FinishWithError(event *EventZap, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
 	}

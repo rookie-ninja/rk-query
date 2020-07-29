@@ -31,7 +31,7 @@ func (his *eventHistory) elapsedMS(action string, elapseMS int64) {
 
 	// do we have enough space?
 	length := his.builder.Len()
-	elapsed := strconv.FormatInt(elapseMS - his.previousTimeMS, 10)
+	elapsed := strconv.FormatInt(elapseMS-his.previousTimeMS, 10)
 
 	size := len(action) + 1 + len(elapsed)
 	if length > 0 {

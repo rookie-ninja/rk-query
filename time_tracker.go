@@ -5,10 +5,10 @@
 package rk_query
 
 import (
-	"bytes"
-	"github.com/juju/errors"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"strconv"
+	"time"
 )
 
 type timeTracker struct {
@@ -20,7 +20,7 @@ type timeTracker struct {
 	isFinished      bool
 }
 
-func NewTimeTracker(name string) *timeTracker {
+func newTimeTracker(name string) *timeTracker {
 	if len(name) == 0 {
 		return nil
 	}
@@ -96,68 +96,42 @@ func (tracker *timeTracker) ElapseWithSample(elapseTimeMS int64, numSample int64
 	tracker.elapsedTotalMS += elapseTimeMS
 }
 
-func (tracker *timeTracker) Finish(timeSource TimeSource) {
+func (tracker *timeTracker) Finish() {
 	tracker.isFinished = true
 
 	if tracker.indexCurr == 0 {
 		return
 	}
 
-	nowMS := timeSource.CurrentTimeMS()
+	nowMS := toMillisecond(time.Now())
 
 	tracker.elapsedTotalMS += tracker.indexCurr * (nowMS - tracker.lastTimestampMS)
 	tracker.lastTimestampMS = nowMS
 	tracker.indexCurr = 0
 }
 
-func (tracker *timeTracker) String() string {
-	var builder bytes.Buffer
-
-	builder.WriteString(tracker.name + ":" +
-		strconv.FormatInt(tracker.elapsedTotalMS, 10) + "/" +
-		strconv.FormatInt(tracker.countTotal, 10))
-
-	return builder.String()
-}
-
-func (tracker *timeTracker) StringWithTimeSource(timeSource TimeSource) string {
+func (tracker *timeTracker) ToZapFields(enc *zapcore.MapObjectEncoder) []zap.Field {
 	if tracker.indexCurr == 0 {
-		return tracker.String()
+		if enc != nil {
+			enc.AddInt64(tracker.name+".elapsed_ms", tracker.elapsedTotalMS)
+			enc.AddInt64(tracker.name+".count", tracker.countTotal)
+		}
+
+		return []zap.Field{
+			zap.Int64(tracker.name+".elapsed_ms", tracker.elapsedTotalMS),
+			zap.Int64(tracker.name+".count", tracker.countTotal),
+		}
 	}
 
-	elapsed := tracker.elapsedTotalMS + tracker.indexCurr * (timeSource.CurrentTimeMS() - tracker.lastTimestampMS)
+	nowMS := toMillisecond(time.Now())
+	elapsedMS := tracker.elapsedTotalMS + tracker.indexCurr*(nowMS-tracker.lastTimestampMS)
 
-	var builder bytes.Buffer
-
-	builder.WriteString(tracker.name + OpenMarker +
-		strconv.FormatInt(tracker.indexCurr, 10) + ":" +
-		strconv.FormatInt(elapsed, 10) + "/" +
-		strconv.FormatInt(tracker.countTotal, 10))
-
-	return builder.String()
-}
-
-func (tracker *timeTracker) ToZapFieldsWithTimeSource(timeSource TimeSource) ([]zap.Field, error) {
-	if tracker.indexCurr == 0 {
-		return tracker.ToZapFields()
+	if enc != nil {
+		enc.AddInt64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", tracker.elapsedTotalMS)
+		enc.AddInt64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal)
 	}
-
-	elapsedMS := tracker.elapsedTotalMS + tracker.indexCurr * (timeSource.CurrentTimeMS() - tracker.lastTimestampMS)
-
 	return []zap.Field{
-		zap.Int64(tracker.name+OpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".elapsed_ms", elapsedMS),
-		zap.Int64(tracker.name+OpenMarker + strconv.FormatInt(tracker.indexCurr, 10) + ".count", tracker.countTotal),
-	}, nil
-}
-
-func (tracker *timeTracker) ToZapFields() ([]zap.Field, error) {
-	if tracker.indexCurr > 0 {
-		return nil, errors.NewNotValid(nil,"there is still open timer")
+		zap.Int64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", elapsedMS),
+		zap.Int64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal),
 	}
-
-	return []zap.Field{
-		zap.Int64(tracker.name+".elapsed_ms", tracker.elapsedTotalMS),
-		zap.Int64(tracker.name+".count", tracker.countTotal),
-	}, nil
 }
-

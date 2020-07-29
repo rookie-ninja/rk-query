@@ -10,11 +10,11 @@ import (
 )
 
 func TestNewTimeTrackerWithNilName(t *testing.T) {
-	assert.Nil(t, NewTimeTracker(""))
+	assert.Nil(t, newTimeTracker(""))
 }
 
 func TestNewTimeTrackerHappyCase(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	assert.NotNil(t, tracker)
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
@@ -25,11 +25,11 @@ func TestNewTimeTrackerHappyCase(t *testing.T) {
 }
 
 func TestGetNameHappyCase(t *testing.T) {
-	assert.Equal(t, "fake", NewTimeTracker("fake").name)
+	assert.Equal(t, "fake", newTimeTracker("fake").name)
 }
 
 func TestStartWithNegativeNowMS(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(-1)
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
@@ -41,7 +41,7 @@ func TestStartWithNegativeNowMS(t *testing.T) {
 }
 
 func TestStartWithZeroIndexCurr(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
@@ -54,7 +54,7 @@ func TestStartWithZeroIndexCurr(t *testing.T) {
 }
 
 func TestStartWithTwoIndexCurr(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 
 	tracker.Start(1)
 	tracker.Start(2)
@@ -70,7 +70,7 @@ func TestStartWithTwoIndexCurr(t *testing.T) {
 }
 
 func TestStartWithThreeIndexCurr(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 
 	tracker.Start(1)
 	tracker.Start(2)
@@ -87,7 +87,7 @@ func TestStartWithThreeIndexCurr(t *testing.T) {
 }
 
 func TestEndWithoutStart(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.End(1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -99,7 +99,7 @@ func TestEndWithoutStart(t *testing.T) {
 }
 
 func TestEndWithNegativeNowMS(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.End(-1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -111,7 +111,7 @@ func TestEndWithNegativeNowMS(t *testing.T) {
 }
 
 func TestEndOneStart(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	tracker.End(2)
 
@@ -124,7 +124,7 @@ func TestEndOneStart(t *testing.T) {
 }
 
 func TestEndTwoStart(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	tracker.End(2)
 
@@ -140,7 +140,7 @@ func TestEndTwoStart(t *testing.T) {
 }
 
 func TestEndWithIncompleteEnd(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 
 	tracker.Start(2)
@@ -155,7 +155,7 @@ func TestEndWithIncompleteEnd(t *testing.T) {
 }
 
 func TestElapseWithNegativeParam(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Elapse(-1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -167,7 +167,7 @@ func TestElapseWithNegativeParam(t *testing.T) {
 }
 
 func TestElapseHappyCase(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Elapse(1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -179,7 +179,7 @@ func TestElapseHappyCase(t *testing.T) {
 }
 
 func TestElapseWithSampleWithNegativeTime(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.ElapseWithSample(-1, 1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -191,7 +191,7 @@ func TestElapseWithSampleWithNegativeTime(t *testing.T) {
 }
 
 func TestElapseWithSampleWithNegativeSample(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.ElapseWithSample(1, -1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -203,7 +203,7 @@ func TestElapseWithSampleWithNegativeSample(t *testing.T) {
 }
 
 func TestElapseWithSampleHappyCase(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.ElapseWithSample(1, 1)
 
 	assert.Equal(t, "fake", tracker.name)
@@ -215,16 +215,11 @@ func TestElapseWithSampleHappyCase(t *testing.T) {
 }
 
 func TestFinishHappyCase(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	tracker.End(2)
-	ts := &FakeTimeSource{
-		func() int64{
-			return 3
-		},
-	}
 
-	tracker.Finish(ts)
+	tracker.Finish()
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
@@ -235,28 +230,13 @@ func TestFinishHappyCase(t *testing.T) {
 }
 
 func TestFinishWithoutEnd(t *testing.T) {
-	tracker := NewTimeTracker("fake")
+	tracker := newTimeTracker("fake")
 	tracker.Start(1)
-	ts := &FakeTimeSource{
-		func() int64{
-			return 2
-		},
-	}
 
-	tracker.Finish(ts)
+	tracker.Finish()
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, ts.CurrentTimeMS(), tracker.lastTimestampMS)
 	assert.Equal(t, int64(1), tracker.countTotal)
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
 	assert.True(t, tracker.isFinished)
-}
-
-type FakeTimeSource struct{
-	inner func() int64
-}
-
-func (source *FakeTimeSource) CurrentTimeMS() int64 {
-	return source.inner()
 }

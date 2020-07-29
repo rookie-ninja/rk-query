@@ -6,45 +6,23 @@ package rk_query
 
 import (
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"testing"
 )
 
-func TestNewEventFactoryWithNilZapLogger(t *testing.T) {
-	fac := NewEventFactory("", &RealTimeSource{}, nil)
+func TestNewEventZapFactoryHappyCase(t *testing.T) {
+	fac := NewEventZapFactory()
 	assert.NotNil(t, fac)
 }
 
-func TestNewEventFactoryHappyCase(t *testing.T) {
-	fac := NewEventFactory("", &RealTimeSource{}, zap.NewNop())
-	assert.NotNil(t, fac)
-	assert.NotNil(t, fac.TimeSource)
-	assert.Empty(t, fac.AppName)
-	assert.NotEmpty(t, fac.HostName)
-	assert.NotNil(t, fac.ZapLogger)
-	assert.Equal(t, RK, fac.Format)
-	assert.False(t, fac.Minimal)
-	assert.Empty(t, fac.Listeners)
-	assert.Empty(t, fac.DefaultKvs)
+func TestEventZapFactory_CreateEvent(t *testing.T) {
+	fac := NewEventZapFactory()
+	event := fac.CreateEventZap()
+	assert.NotNil(t, event)
 }
 
-func TestEventFactory_CreateEvent(t *testing.T) {
-	fac := NewEventFactory("", &RealTimeSource{}, zap.NewNop())
-	event := fac.CreateEvent()
+func TestEventZapFactory_CreateEvent_WithAppName(t *testing.T) {
+	fac := NewEventZapFactory()
+	event := fac.CreateEventZap(WithAppName("app"))
 	assert.NotNil(t, event)
-	assert.IsType(t, &EventImpl{}, event)
-}
-
-func TestEventFactory_CreateThreadSafeEvent(t *testing.T) {
-	fac := NewEventFactory("", &RealTimeSource{}, zap.NewNop())
-	event := fac.CreateThreadSafeEvent()
-	assert.NotNil(t, event)
-	assert.IsType(t, &ThreadSafeEventImpl{}, event)
-}
-
-func TestEventFactory_CreateNoopEvent(t *testing.T) {
-	fac := NewEventFactory("", &RealTimeSource{}, zap.NewNop())
-	event := fac.CreateNoopEvent()
-	assert.NotNil(t, event)
-	assert.IsType(t, &NoopEvent{}, event)
+	assert.Equal(t, "appName", event.GetAppName())
 }
