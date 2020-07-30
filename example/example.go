@@ -43,20 +43,20 @@ var (
 )
 
 func main() {
-	withEventZapRkFormat()
-	withEventZapJSONFormat()
-	withEventZapHelper()
+	withEventRkFormat()
+	withEventJSONFormat()
+	withEventHelper()
 }
 
-func withEventZapJSONFormat() {
+func withEventJSONFormat() {
 	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventZapFactory(
+	fac := rk_query.NewEventFactory(
 		rk_query.WithAppName("appName"),
 		rk_query.WithFormat(rk_query.JSON),
 		rk_query.WithOperation("op"),
 		rk_query.WithLogger(logger))
-	event := fac.CreateEventZap()
+	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
 	event.StartTimer("t1")
@@ -70,15 +70,15 @@ func withEventZapJSONFormat() {
 	event.WriteLog()
 }
 
-func withEventZapRkFormat() {
+func withEventRkFormat() {
 	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventZapFactory(
+	fac := rk_query.NewEventFactory(
 		rk_query.WithAppName("appName"),
 		rk_query.WithFormat(rk_query.RK),
 		rk_query.WithOperation("op"),
 		rk_query.WithLogger(logger))
-	event := fac.CreateEventZap()
+	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
 	event.StartTimer("t1")
@@ -92,9 +92,9 @@ func withEventZapRkFormat() {
 	event.WriteLog()
 }
 
-func withEventZapHelper() {
+func withEventHelper() {
 	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
-	helper := rk_query.NewEventZapHelper(rk_query.NewEventZapFactory(rk_query.WithLogger(logger)))
+	helper := rk_query.NewEventHelper(rk_query.NewEventFactory(rk_query.WithLogger(logger)))
 
 	event := helper.Start("op")
 	helper.Finish(event)

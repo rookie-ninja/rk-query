@@ -65,6 +65,7 @@ type EventZap struct {
 	hostname     string
 	operation    string
 	remoteAddr   string
+	eventId      string
 	endTime      time.Time
 	startTime    time.Time
 	status       eventStatus
@@ -89,6 +90,14 @@ func (event *EventZap) GetValue(key string) string {
 
 func (event *EventZap) GetAppName() string {
 	return event.appName
+}
+
+func (event *EventZap) GetEventId() string {
+	return event.eventId
+}
+
+func (event *EventZap) SetEventId(id string) {
+	event.eventId = id
 }
 
 func (event *EventZap) GetHostname() string {
@@ -253,6 +262,10 @@ func (event *EventZap) AddPair(key, value string) {
 }
 
 func (event *EventZap) AddErr(err error) {
+	if err == nil {
+		return
+	}
+
 	name := reflect.TypeOf(err).Name()
 	if len(name) < 1 {
 		name = "std-err"
@@ -326,6 +339,10 @@ func (event *EventZap) toRkFormat() string {
 	builder.WriteString(fmt.Sprintf("%s=%d\n", timeKey, event.GetEndTime().Sub(event.GetStartTime()).Milliseconds()))
 	// hostname
 	builder.WriteString(fmt.Sprintf("%s=%s\n", hostnameKey, event.GetHostname()))
+	// eventId
+	if len(event.GetEventId()) > 0 {
+		builder.WriteString(fmt.Sprintf("%s=%s\n", eventIdKey, event.GetEventId()))
+	}
 	// timing
 	builder.WriteString(fmt.Sprintf("%s=%s\n", timingKey, event.marshalTiming()))
 	// counters
@@ -346,13 +363,13 @@ func (event *EventZap) toRkFormat() string {
 	// app name
 	builder.WriteString(fmt.Sprintf("%s=%s\n", appNameKey, event.GetAppName()))
 	// operation
-	builder.WriteString(fmt.Sprintf("%s=%s\n", operationKey, event.GetRemoteAddr()))
+	builder.WriteString(fmt.Sprintf("%s=%s\n", operationKey, event.GetOperation()))
 	// status
 	builder.WriteString(fmt.Sprintf("%s=%s\n", eventStatusKey, event.GetEventStatus().String()))
 	// history
-	if event.producesHistory() && event.GetEventHistory().builder.Len() > 0 {
+	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
 		builder.WriteString(historyKey + "=")
-		event.GetEventHistory().appendTo(builder)
+		event.getEventHistory().appendTo(builder)
 		builder.WriteString("\n")
 	}
 
@@ -377,6 +394,11 @@ func (event *EventZap) toJsonFormat() []zap.Field {
 	fields = append(fields, zap.Int64(timeKey, event.GetEndTime().Sub(event.GetStartTime()).Milliseconds()))
 	// hostname
 	fields = append(fields, zap.String(hostnameKey, event.GetHostname()))
+	// eventId
+	if len(event.eventId) > 1 {
+		fields = append(fields, zap.String(eventIdKey, event.GetEventId()))
+	}
+
 	// timing
 	fields = append(fields, event.marshalTimerField())
 	// counters
@@ -404,9 +426,9 @@ func (event *EventZap) toJsonFormat() []zap.Field {
 	fields = append(fields, zap.String(eventStatusKey, event.GetEventStatus().String()))
 
 	// history
-	if event.producesHistory() && event.GetEventHistory().builder.Len() > 0 {
+	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
 		builder := &bytes.Buffer{}
-		event.GetEventHistory().appendTo(builder)
+		event.getEventHistory().appendTo(builder)
 		fields = append(fields, zap.String(historyKey, builder.String()))
 	}
 
@@ -457,7 +479,7 @@ func (event *EventZap) marshalTimerField() zap.Field {
 	return zap.Any(timingKey, enc.Fields)
 }
 
-func (event *EventZap) GetEventHistory() *eventHistory {
+func (event *EventZap) getEventHistory() *eventHistory {
 	return event.eventHistory
 }
 
@@ -471,6 +493,26 @@ func (event *EventZap) inProgress() bool {
 	}
 
 	return true
+}
+
+func (event *EventZap) setLogger(logger *zap.Logger) {
+	event.logger = logger
+}
+
+func (event *EventZap) setFormat(format Format) {
+	event.format = format
+}
+
+func (event *EventZap) setQuietMode(quietMode bool) {
+	event.quietMode = quietMode
+}
+
+func (event *EventZap) setAppName(appName string) {
+	event.appName = appName
+}
+
+func (event *EventZap) setHostname(hostname string) {
+	event.hostname = hostname
 }
 
 func toMillisecond(curr time.Time) int64 {

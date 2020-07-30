@@ -9,20 +9,20 @@ import (
 	"testing"
 )
 
-func TestNewEventZapFactoryHappyCase(t *testing.T) {
-	fac := NewEventZapFactory()
+func TestNewEventFactoryHappyCase(t *testing.T) {
+	fac := NewEventFactory()
 	assert.NotNil(t, fac)
 }
 
-func TestEventZapFactory_CreateEvent(t *testing.T) {
-	fac := NewEventZapFactory()
-	event := fac.CreateEventZap()
+func TestEventFactory_CreateEvent(t *testing.T) {
+	fac := NewEventFactory()
+	event := fac.CreateEvent()
 	assert.NotNil(t, event)
 }
 
-func TestEventZapFactory_CreateEvent_WithAppName(t *testing.T) {
-	fac := NewEventZapFactory()
-	event := fac.CreateEventZap(WithAppName("app"))
+func TestEventFactory_CreateEvent_WithAppName(t *testing.T) {
+	fac := NewEventFactory()
+	event := fac.CreateEvent(WithAppName("app"))
 	assert.NotNil(t, event)
 	assert.Equal(t, "appName", event.GetAppName())
 }

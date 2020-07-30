@@ -9,31 +9,31 @@ import (
 )
 
 // A helper function for easy use of EventData
-type EventZapHelper struct {
-	Factory *EventZapFactory
+type EventHelper struct {
+	Factory *EventFactory
 }
 
-func NewEventZapHelper(factory *EventZapFactory) *EventZapHelper {
+func NewEventHelper(factory *EventFactory) *EventHelper {
 	if factory == nil {
-		factory = NewEventZapFactory()
+		factory = NewEventFactory()
 	}
-	return &EventZapHelper{factory}
+	return &EventHelper{factory}
 }
 
-func (helper *EventZapHelper) Start(operation string) *EventZap {
-	event := helper.Factory.CreateEventZap()
+func (helper *EventHelper) Start(operation string) Event {
+	event := helper.Factory.CreateEvent()
 
 	event.SetOperation(operation)
 	event.SetStartTime(time.Now())
 	return event
 }
 
-func (helper *EventZapHelper) Finish(event *EventZap) {
+func (helper *EventHelper) Finish(event Event) {
 	event.SetEndTime(time.Now())
 	event.WriteLog()
 }
 
-func (helper *EventZapHelper) FinishWithCond(event *EventZap, success bool) {
+func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
 	} else {
@@ -43,7 +43,7 @@ func (helper *EventZapHelper) FinishWithCond(event *EventZap, success bool) {
 	helper.Finish(event)
 }
 
-func (helper *EventZapHelper) FinishWithError(event *EventZap, err error) {
+func (helper *EventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
 	}

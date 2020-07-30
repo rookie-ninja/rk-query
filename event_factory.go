@@ -8,77 +8,85 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"sync"
 )
 
-type EventZapOption func(*EventZap)
+type EventOption func(Event)
 
-func WithLogger(logger *zap.Logger) EventZapOption {
-	return func(event *EventZap) {
-		event.logger = logger
+func WithLogger(logger *zap.Logger) EventOption {
+	return func(event Event) {
+		event.setLogger(logger)
 	}
 }
 
-func WithFormat(format Format) EventZapOption {
-	return func(event *EventZap) {
-		event.format = format
+func WithFormat(format Format) EventOption {
+	return func(event Event) {
+		event.setFormat(format)
 	}
 }
 
-func WithQuietMode(quietMode bool) EventZapOption {
-	return func(event *EventZap) {
-		event.quietMode = quietMode
+func WithQuietMode(quietMode bool) EventOption {
+	return func(event Event) {
+		event.setQuietMode(quietMode)
 	}
 }
 
-func WithAppName(appName string) EventZapOption {
-	return func(event *EventZap) {
-		event.appName = appName
+func WithAppName(appName string) EventOption {
+	return func(event Event) {
+		event.setAppName(appName)
 	}
 }
 
-func WithHostname(hostname string) EventZapOption {
-	return func(event *EventZap) {
-		event.hostname = hostname
+func WithHostname(hostname string) EventOption {
+	return func(event Event) {
+		event.setHostname(hostname)
 	}
 }
 
-func WithOperation(operation string) EventZapOption {
-	return func(event *EventZap) {
-		event.operation = operation
+func WithOperation(operation string) EventOption {
+	return func(event Event) {
+		event.SetOperation(operation)
 	}
 }
 
-func WithRemoteAddr(addr string) EventZapOption {
-	return func(event *EventZap) {
-		event.remoteAddr = addr
+func WithRemoteAddr(addr string) EventOption {
+	return func(event Event) {
+		event.SetRemoteAddr(addr)
 	}
 }
 
-func WithFields(fields []zap.Field) EventZapOption {
-	return func(event *EventZap) {
-		event.fields = append(event.fields, fields...)
+func WithFields(fields []zap.Field) EventOption {
+	return func(event Event) {
+		event.AddFields(fields...)
 	}
 }
 
 // Not thread safe!!!
-type EventZapFactory struct {
-	options []EventZapOption
+type EventFactory struct {
+	appName string
+	options []EventOption
 }
 
-func NewEventZapFactory(option ...EventZapOption) *EventZapFactory {
-	return &EventZapFactory{
+func NewEventFactory(option ...EventOption) *EventFactory {
+	factory := &EventFactory{
 		options: option,
 	}
+
+	return factory
 }
 
-func (factory *EventZapFactory) CreateEventZap(options ...EventZapOption) *EventZap {
+func (factory *EventFactory) GetAppName() string {
+	return factory.appName
+}
+
+func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &EventZap{
 		logger:     zap.NewNop(),
 		format:     RK,
 		status:     notStarted,
 		appName:    Unknown,
 		hostname:   obtainHostName(),
-		remoteAddr: Unknown,
+		remoteAddr: obtainHostName(),
 		operation:  Unknown,
 		counters:   zapcore.NewMapObjectEncoder(),
 		pairs:      zapcore.NewMapObjectEncoder(),
@@ -97,6 +105,8 @@ func (factory *EventZapFactory) CreateEventZap(options ...EventZapOption) *Event
 		opt(event)
 	}
 
+	factory.appName = event.GetAppName()
+
 	event.logger.Core().Sync()
 
 	if !event.quietMode {
@@ -104,6 +114,18 @@ func (factory *EventZapFactory) CreateEventZap(options ...EventZapOption) *Event
 	}
 
 	return event
+}
+
+func (factory *EventFactory) CreateEventNoop() Event {
+	return &EventNoop{}
+}
+
+func (factory *EventFactory) CreateEventThreadSafe(options ...EventOption) Event {
+	event := factory.CreateEvent(options...)
+	return &EventThreadSafe{
+		delegate: event,
+		lock: &sync.Mutex{},
+	}
 }
 
 func obtainHostName() string {

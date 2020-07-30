@@ -49,15 +49,15 @@ var (
    }`)
 )
 
-func withEventZapRkFormat() {
+func withEventRkFormat() {
 	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventZapFactory(
+	fac := rk_query.NewEventFactory(
 		rk_query.WithAppName("appName"),
 		rk_query.WithFormat(rk_query.RK),
 		rk_query.WithOperation("op"),
 		rk_query.WithLogger(logger))
-	event := fac.CreateEventZap()
+	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
 	event.StartTimer("t1")
@@ -77,7 +77,7 @@ Output
 end_time=2020-07-30T03:42:22.393874+08:00
 start_time=2020-07-30T03:42:21.390642+08:00
 time=1003
-hostname=JEREMYYIN-MB0
+hostname=MYLOCAL
 timing={"t1.count":1,"t1.elapsed_ms":1003}
 counter={"count":1}
 pair={"key":"value"}
@@ -127,15 +127,15 @@ var (
    }`)
 )
 
-func withEventZapRkFormat() {
+func withEventJSONFormat() {
 	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventZapFactory(
+	fac := rk_query.NewEventFactory(
 		rk_query.WithAppName("appName"),
 		rk_query.WithFormat(rk_query.JSON),
 		rk_query.WithOperation("op"),
 		rk_query.WithLogger(logger))
-	event := fac.CreateEventZap()
+	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
 	event.StartTimer("t1")
@@ -156,7 +156,7 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
     "end_time":"2020-07-30T03:42:23.398+0800",
     "start_time":"2020-07-30T03:42:22.394+0800",
     "time":1004,
-    "hostname":"JEREMYYIN-MB0",
+    "hostname":"MYLOCAL",
     "timing":{
         "t1.count":1,
         "t1.elapsed_ms":1004

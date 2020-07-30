@@ -10,15 +10,15 @@ import (
 	"testing"
 )
 
-func TestNewEventZapHelper(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+func TestNewEventHelper(t *testing.T) {
+	helper := NewEventHelper(NewEventFactory())
 
 	assert.NotNil(t, helper)
 	assert.NotNil(t, helper.Factory)
 }
 
 func TestEventHelper_Start(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	assert.NotNil(t, event)
@@ -26,7 +26,7 @@ func TestEventHelper_Start(t *testing.T) {
 }
 
 func TestEventHelper_Finish(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	helper.Finish(event)
@@ -36,7 +36,7 @@ func TestEventHelper_Finish(t *testing.T) {
 }
 
 func TestEventHelper_FinishWithCond_WithSuccess(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	helper.FinishWithCond(event, true)
@@ -47,7 +47,7 @@ func TestEventHelper_FinishWithCond_WithSuccess(t *testing.T) {
 }
 
 func TestEventHelper_FinishWithCond_WithFailure(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	helper.FinishWithCond(event, false)
@@ -58,27 +58,27 @@ func TestEventHelper_FinishWithCond_WithFailure(t *testing.T) {
 }
 
 func TestEventHelper_FinishWithError_WithoutError(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	helper.FinishWithError(event, nil)
 
 	assert.NotZero(t, event.GetStartTime().Unix())
 	assert.NotZero(t, event.GetEndTime().Unix())
-	assert.Equal(t, 1, event.GetCounter("success"))
+	assert.Equal(t, int64(1), event.GetCounter("success"))
 	assert.Zero(t, event.GetErrCount(errors.New("")))
 }
 
 func TestEventHelper_FinishWithError_WithError(t *testing.T) {
-	helper := NewEventZapHelper(NewEventZapFactory())
+	helper := NewEventHelper(NewEventFactory())
 
 	event := helper.Start("")
 	helper.FinishWithError(event, &MyErr{})
 
 	assert.NotZero(t, event.GetStartTime().Unix())
 	assert.NotZero(t, event.GetEndTime().Unix())
-	assert.Equal(t, 1, event.GetCounter("failure"))
-	assert.Zero(t, event.GetErrCount(&MyErr{}))
+	assert.Equal(t, int64(1), event.GetCounter("failure"))
+	assert.NotZero(t, event.GetErrCount(&MyErr{}))
 }
 
 type MyErr struct{}
