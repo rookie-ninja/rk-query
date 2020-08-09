@@ -5,103 +5,103 @@ import (
 	"time"
 )
 
-type EventNoop struct{}
+type eventNoop struct{}
 
-func (EventNoop) GetValue(string) string {
+func (eventNoop) GetValue(string) string {
 	return ""
 }
 
-func (EventNoop) GetAppName() string {
+func (eventNoop) GetAppName() string {
 	return ""
 }
 
-func (EventNoop) GetEventId() string {
+func (eventNoop) GetEventId() string {
 	return ""
 }
 
-func (EventNoop) SetEventId(string) {}
+func (eventNoop) SetEventId(string) {}
 
-func (EventNoop) GetHostname() string {
+func (eventNoop) GetHostname() string {
 	return ""
 }
 
-func (EventNoop) GetLogger() *zap.Logger {
+func (eventNoop) GetLogger() *zap.Logger {
 	return zap.NewNop()
 }
 
-func (EventNoop) GetOperation() string {
+func (eventNoop) GetOperation() string {
 	return ""
 }
 
-func (EventNoop) SetOperation(string) {}
+func (eventNoop) SetOperation(string) {}
 
-func (EventNoop) GetEventStatus() eventStatus {
+func (eventNoop) GetEventStatus() eventStatus {
 	return notStarted
 }
 
-func (EventNoop) SetStartTime(time.Time) {}
+func (eventNoop) SetStartTime(time.Time) {}
 
-func (EventNoop) GetStartTime() time.Time {
+func (eventNoop) GetStartTime() time.Time {
 	return time.Now()
 }
 
-func (EventNoop) GetEndTime() time.Time {
+func (eventNoop) GetEndTime() time.Time {
 	return time.Now()
 }
 
-func (EventNoop) SetEndTime(time.Time) {}
+func (eventNoop) SetEndTime(time.Time) {}
 
-func (EventNoop) StartTimer(string) {}
+func (eventNoop) StartTimer(string) {}
 
-func (EventNoop) EndTimer(string) {}
+func (eventNoop) EndTimer(string) {}
 
-func (EventNoop) UpdateTimer(string, int64) {}
+func (eventNoop) UpdateTimer(string, int64) {}
 
-func (EventNoop) UpdateTimerWithSample(string, int64, int64) {}
+func (eventNoop) UpdateTimerWithSample(string, int64, int64) {}
 
-func (EventNoop) GetTimeElapsedMS(string) int64 {
+func (eventNoop) GetTimeElapsedMS(string) int64 {
 	return 0
 }
 
-func (EventNoop) GetRemoteAddr() string {
+func (eventNoop) GetRemoteAddr() string {
 	return ""
 }
 
-func (EventNoop) SetRemoteAddr(string) {}
+func (eventNoop) SetRemoteAddr(string) {}
 
-func (EventNoop) GetCounter(string) int64 {
+func (eventNoop) GetCounter(string) int64 {
 	return 0
 }
 
-func (EventNoop) SetCounter(string, int64) {}
+func (eventNoop) SetCounter(string, int64) {}
 
-func (EventNoop) InCCounter(string, int64) {}
+func (eventNoop) InCCounter(string, int64) {}
 
-func (EventNoop) AddPair(string, string) {}
+func (eventNoop) AddPair(string, string) {}
 
-func (EventNoop) AddErr(error) {
+func (eventNoop) AddErr(error) {
 }
 
-func (EventNoop) GetErrCount(error) int64 {
+func (eventNoop) GetErrCount(error) int64 {
 	return 0
 }
 
-func (EventNoop) AddFields(...zap.Field) {}
+func (eventNoop) AddFields(...zap.Field) {}
 
-func (EventNoop) GetFields() []zap.Field {
+func (eventNoop) GetFields() []zap.Field {
 	return make([]zap.Field, 0)
 }
 
-func (EventNoop) RecordHistoryEvent(string) {}
+func (eventNoop) RecordHistoryEvent(string) {}
 
-func (EventNoop) WriteLog() {}
+func (eventNoop) WriteLog() {}
 
-func (EventNoop) setLogger(*zap.Logger) {}
+func (eventNoop) setLogger(*zap.Logger) {}
 
-func (EventNoop) setFormat(Format) {}
+func (eventNoop) setFormat(format) {}
 
-func (EventNoop) setQuietMode(bool) {}
+func (eventNoop) setQuietMode(bool) {}
 
-func (EventNoop) setAppName(string) {}
+func (eventNoop) setAppName(string) {}
 
-func (EventNoop) setHostname(string) {}
+func (eventNoop) setHostname(string) {}

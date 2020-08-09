@@ -5,22 +5,56 @@
 package rk_query
 
 import (
+	rk_logger "github.com/rookie-ninja/rk-logger"
 	"time"
 )
 
+var (
+	stdLoggerConfigBytes = []byte(`{
+     "level": "info",
+     "encoding": "console",
+     "outputPaths": ["stdout"],
+     "errorOutputPaths": ["stderr"],
+     "initialFields": {},
+     "encoderConfig": {
+       "messageKey": "msg",
+       "levelKey": "",
+       "nameKey": "",
+       "timeKey": "",
+       "callerKey": "",
+       "stacktraceKey": "",
+       "callstackKey": "",
+       "errorKey": "",
+       "timeEncoder": "iso8601",
+       "fileKey": "",
+       "levelEncoder": "capital",
+       "durationEncoder": "second",
+       "callerEncoder": "full",
+       "nameEncoder": "full"
+     },
+    "maxsize": 1,
+    "maxage": 7,
+    "maxbackups": 3,
+    "localtime": true,
+    "compress": true
+   }`)
+
+	StdoutLogger, _, _ = rk_logger.NewZapLoggerWithBytes(stdLoggerConfigBytes, rk_logger.JSON)
+)
+
 // A helper function for easy use of EventData
-type EventHelper struct {
+type eventHelper struct {
 	Factory *EventFactory
 }
 
-func NewEventHelper(factory *EventFactory) *EventHelper {
+func NewEventHelper(factory *EventFactory) *eventHelper {
 	if factory == nil {
 		factory = NewEventFactory()
 	}
-	return &EventHelper{factory}
+	return &eventHelper{factory}
 }
 
-func (helper *EventHelper) Start(operation string) Event {
+func (helper *eventHelper) Start(operation string) Event {
 	event := helper.Factory.CreateEvent()
 
 	event.SetOperation(operation)
@@ -28,12 +62,12 @@ func (helper *EventHelper) Start(operation string) Event {
 	return event
 }
 
-func (helper *EventHelper) Finish(event Event) {
+func (helper *eventHelper) Finish(event Event) {
 	event.SetEndTime(time.Now())
 	event.WriteLog()
 }
 
-func (helper *EventHelper) FinishWithCond(event Event, success bool) {
+func (helper *eventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
 	} else {
@@ -43,7 +77,7 @@ func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	helper.Finish(event)
 }
 
-func (helper *EventHelper) FinishWithError(event Event, err error) {
+func (helper *eventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
 	}

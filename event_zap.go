@@ -37,15 +37,15 @@ func (status eventStatus) String() string {
 	return names[status]
 }
 
-type Format int
+type format int
 
 const (
-	JSON Format = 0
-	RK   Format = 1
+	JSON format = 0
+	RK   format = 1
 )
 
 // Stringer above config file types.
-func (fileType Format) String() string {
+func (fileType format) String() string {
 	names := [...]string{"JSON", "RK"}
 
 	// Please do not forget to change the boundary while adding a new config file types
@@ -56,10 +56,20 @@ func (fileType Format) String() string {
 	return names[fileType]
 }
 
+func ToFormat(f string) format {
+	if f == "JSON" {
+		return JSON
+	} else if f == "RK" {
+		return RK
+	}
+
+	return RK
+}
+
 // It is not thread safe.
-type EventZap struct {
+type eventZap struct {
 	logger       *zap.Logger
-	format       Format
+	format       format
 	quietMode    bool
 	appName      string
 	hostname     string
@@ -77,7 +87,7 @@ type EventZap struct {
 	tracker      map[string]*timeTracker
 }
 
-func (event *EventZap) GetValue(key string) string {
+func (event *eventZap) GetValue(key string) string {
 	val, ok := event.pairs.Fields[key]
 	str := cast.ToString(val)
 
@@ -88,52 +98,52 @@ func (event *EventZap) GetValue(key string) string {
 	}
 }
 
-func (event *EventZap) GetAppName() string {
+func (event *eventZap) GetAppName() string {
 	return event.appName
 }
 
-func (event *EventZap) GetEventId() string {
+func (event *eventZap) GetEventId() string {
 	return event.eventId
 }
 
-func (event *EventZap) SetEventId(id string) {
+func (event *eventZap) SetEventId(id string) {
 	event.eventId = id
 }
 
-func (event *EventZap) GetHostname() string {
+func (event *eventZap) GetHostname() string {
 	return event.hostname
 }
 
-func (event *EventZap) GetLogger() *zap.Logger {
+func (event *eventZap) GetLogger() *zap.Logger {
 	return event.logger
 }
 
-func (event *EventZap) GetOperation() string {
+func (event *eventZap) GetOperation() string {
 	return event.operation
 }
 
-func (event *EventZap) SetOperation(operation string) {
+func (event *eventZap) SetOperation(operation string) {
 	event.operation = operation
 }
 
-func (event *EventZap) GetEventStatus() eventStatus {
+func (event *eventZap) GetEventStatus() eventStatus {
 	return event.status
 }
 
-func (event *EventZap) SetStartTime(curr time.Time) {
+func (event *eventZap) SetStartTime(curr time.Time) {
 	event.startTime = curr
 	event.status = inProgress
 }
 
-func (event *EventZap) GetStartTime() time.Time {
+func (event *eventZap) GetStartTime() time.Time {
 	return event.startTime
 }
 
-func (event *EventZap) GetEndTime() time.Time {
+func (event *eventZap) GetEndTime() time.Time {
 	return event.endTime
 }
 
-func (event *EventZap) SetEndTime(curr time.Time) {
+func (event *eventZap) SetEndTime(curr time.Time) {
 	if event.status != inProgress {
 		return
 	}
@@ -147,7 +157,7 @@ func (event *EventZap) SetEndTime(curr time.Time) {
 	event.status = ended
 }
 
-func (event *EventZap) StartTimer(name string) {
+func (event *eventZap) StartTimer(name string) {
 	if !event.inProgress() || len(name) < 1 {
 		return
 	}
@@ -172,7 +182,7 @@ func (event *EventZap) StartTimer(name string) {
 	}
 }
 
-func (event *EventZap) EndTimer(name string) {
+func (event *eventZap) EndTimer(name string) {
 	if !event.inProgress() || len(name) < 1 {
 		return
 	}
@@ -191,11 +201,11 @@ func (event *EventZap) EndTimer(name string) {
 	}
 }
 
-func (event *EventZap) UpdateTimer(name string, elapsedMS int64) {
+func (event *eventZap) UpdateTimer(name string, elapsedMS int64) {
 	event.UpdateTimerWithSample(name, elapsedMS, 1)
 }
 
-func (event *EventZap) UpdateTimerWithSample(name string, elapsedMS, sample int64) {
+func (event *eventZap) UpdateTimerWithSample(name string, elapsedMS, sample int64) {
 	if !event.inProgress() || len(name) < 1 {
 		return
 	}
@@ -216,7 +226,7 @@ func (event *EventZap) UpdateTimerWithSample(name string, elapsedMS, sample int6
 	tracker.ElapseWithSample(elapsedMS, sample)
 }
 
-func (event *EventZap) GetTimeElapsedMS(name string) int64 {
+func (event *eventZap) GetTimeElapsedMS(name string) int64 {
 	timer, contains := event.tracker[name]
 	if !contains {
 		return -1
@@ -225,15 +235,15 @@ func (event *EventZap) GetTimeElapsedMS(name string) int64 {
 	return timer.GetElapsedMS()
 }
 
-func (event *EventZap) GetRemoteAddr() string {
+func (event *eventZap) GetRemoteAddr() string {
 	return event.remoteAddr
 }
 
-func (event *EventZap) SetRemoteAddr(addr string) {
+func (event *eventZap) SetRemoteAddr(addr string) {
 	event.remoteAddr = addr
 }
 
-func (event *EventZap) GetCounter(key string) int64 {
+func (event *eventZap) GetCounter(key string) int64 {
 	val, ok := event.counters.Fields[key]
 
 	if ok {
@@ -243,11 +253,11 @@ func (event *EventZap) GetCounter(key string) int64 {
 	}
 }
 
-func (event *EventZap) SetCounter(key string, value int64) {
+func (event *eventZap) SetCounter(key string, value int64) {
 	event.counters.AddInt64(key, value)
 }
 
-func (event *EventZap) InCCounter(key string, delta int64) {
+func (event *eventZap) InCCounter(key string, delta int64) {
 	val, ok := event.counters.Fields[key]
 
 	if ok {
@@ -257,11 +267,11 @@ func (event *EventZap) InCCounter(key string, delta int64) {
 	}
 }
 
-func (event *EventZap) AddPair(key, value string) {
+func (event *eventZap) AddPair(key, value string) {
 	event.pairs.AddString(key, value)
 }
 
-func (event *EventZap) AddErr(err error) {
+func (event *eventZap) AddErr(err error) {
 	if err == nil {
 		return
 	}
@@ -279,7 +289,7 @@ func (event *EventZap) AddErr(err error) {
 	}
 }
 
-func (event *EventZap) GetErrCount(err error) int64 {
+func (event *eventZap) GetErrCount(err error) int64 {
 	name := reflect.TypeOf(err).Name()
 	if len(name) < 1 {
 		name = "std-err"
@@ -293,21 +303,21 @@ func (event *EventZap) GetErrCount(err error) int64 {
 	return 0
 }
 
-func (event *EventZap) AddFields(fields ...zap.Field) {
+func (event *eventZap) AddFields(fields ...zap.Field) {
 	event.fields = append(event.fields, fields...)
 }
 
-func (event *EventZap) GetFields() []zap.Field {
+func (event *eventZap) GetFields() []zap.Field {
 	return event.fields
 }
 
-func (event *EventZap) RecordHistoryEvent(name string) {
+func (event *eventZap) RecordHistoryEvent(name string) {
 	if event.producesHistory() {
 		event.eventHistory.elapsedMS(name, toMillisecond(time.Now()))
 	}
 }
 
-func (event *EventZap) WriteLog() {
+func (event *eventZap) WriteLog() {
 	if event.format == JSON {
 		event.GetLogger().With(event.toJsonFormat()...).Info("")
 	} else {
@@ -320,10 +330,10 @@ func (event *EventZap) WriteLog() {
 	}
 }
 
-func (event *EventZap) toRkFormat() string {
+func (event *eventZap) toRkFormat() string {
 	builder := &bytes.Buffer{}
 
-	builder.WriteString(ScopeDelimiter + "\n")
+	builder.WriteString(scopeDelimiter + "\n")
 
 	// end_time
 	if event.GetEndTime().IsZero() {
@@ -373,11 +383,11 @@ func (event *EventZap) toRkFormat() string {
 		builder.WriteString("\n")
 	}
 
-	builder.WriteString(EOE)
+	builder.WriteString(eoe)
 	return builder.String()
 }
 
-func (event *EventZap) toJsonFormat() []zap.Field {
+func (event *eventZap) toJsonFormat() []zap.Field {
 	fields := make([]zapcore.Field, 0)
 
 	// end_time
@@ -435,7 +445,7 @@ func (event *EventZap) toJsonFormat() []zap.Field {
 	return fields
 }
 
-func (event *EventZap) marshalEncoder(enc *zapcore.MapObjectEncoder) string {
+func (event *eventZap) marshalEncoder(enc *zapcore.MapObjectEncoder) string {
 	builder := &bytes.Buffer{}
 
 	bytes, err := json.Marshal(enc.Fields)
@@ -451,7 +461,7 @@ func (event *EventZap) marshalEncoder(enc *zapcore.MapObjectEncoder) string {
 	return builder.String()
 }
 
-func (event *EventZap) marshalTiming() string {
+func (event *eventZap) marshalTiming() string {
 	builder := &bytes.Buffer{}
 	enc := zapcore.NewMapObjectEncoder()
 
@@ -470,7 +480,7 @@ func (event *EventZap) marshalTiming() string {
 	return builder.String()
 }
 
-func (event *EventZap) marshalTimerField() zap.Field {
+func (event *eventZap) marshalTimerField() zap.Field {
 	enc := zapcore.NewMapObjectEncoder()
 	for _, v := range event.tracker {
 		v.ToZapFields(enc)
@@ -479,15 +489,15 @@ func (event *EventZap) marshalTimerField() zap.Field {
 	return zap.Any(timingKey, enc.Fields)
 }
 
-func (event *EventZap) getEventHistory() *eventHistory {
+func (event *eventZap) getEventHistory() *eventHistory {
 	return event.eventHistory
 }
 
-func (event *EventZap) producesHistory() bool {
+func (event *eventZap) producesHistory() bool {
 	return !event.quietMode
 }
 
-func (event *EventZap) inProgress() bool {
+func (event *eventZap) inProgress() bool {
 	if event.status != inProgress {
 		return false
 	}
@@ -495,23 +505,23 @@ func (event *EventZap) inProgress() bool {
 	return true
 }
 
-func (event *EventZap) setLogger(logger *zap.Logger) {
+func (event *eventZap) setLogger(logger *zap.Logger) {
 	event.logger = logger
 }
 
-func (event *EventZap) setFormat(format Format) {
+func (event *eventZap) setFormat(format format) {
 	event.format = format
 }
 
-func (event *EventZap) setQuietMode(quietMode bool) {
+func (event *eventZap) setQuietMode(quietMode bool) {
 	event.quietMode = quietMode
 }
 
-func (event *EventZap) setAppName(appName string) {
+func (event *eventZap) setAppName(appName string) {
 	event.appName = appName
 }
 
-func (event *EventZap) setHostname(hostname string) {
+func (event *eventZap) setHostname(hostname string) {
 	event.hostname = hostname
 }
 

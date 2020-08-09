@@ -3,7 +3,7 @@ Human readable query logger with zap logger
 
 - [zap](https://github.com/uber-go/zap)
 - [lumberjack](https://github.com/natefinch/lumberjack)
-- [rk-query](https://github.com/rookie-ninja/rk-logger)
+- [rk-logger](https://github.com/rookie-ninja/rk-logger)
 
 ## Installation
 `go get -u rookie-ninja/rk-query`

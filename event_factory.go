@@ -19,7 +19,7 @@ func WithLogger(logger *zap.Logger) EventOption {
 	}
 }
 
-func WithFormat(format Format) EventOption {
+func WithFormat(format format) EventOption {
 	return func(event Event) {
 		event.setFormat(format)
 	}
@@ -80,14 +80,14 @@ func (factory *EventFactory) GetAppName() string {
 }
 
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
-	event := &EventZap{
+	event := &eventZap{
 		logger:     zap.NewNop(),
 		format:     RK,
 		status:     notStarted,
-		appName:    Unknown,
+		appName:    unknown,
 		hostname:   obtainHostName(),
 		remoteAddr: obtainHostName(),
-		operation:  Unknown,
+		operation:  unknown,
 		counters:   zapcore.NewMapObjectEncoder(),
 		pairs:      zapcore.NewMapObjectEncoder(),
 		errors:     zapcore.NewMapObjectEncoder(),
@@ -117,12 +117,12 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 }
 
 func (factory *EventFactory) CreateEventNoop() Event {
-	return &EventNoop{}
+	return &eventNoop{}
 }
 
 func (factory *EventFactory) CreateEventThreadSafe(options ...EventOption) Event {
 	event := factory.CreateEvent(options...)
-	return &EventThreadSafe{
+	return &eventThreadSafe{
 		delegate: event,
 		lock: &sync.Mutex{},
 	}
@@ -133,7 +133,7 @@ func obtainHostName() string {
 
 	// In this version, we will ignore errors returned by OS
 	if err != nil {
-		hostName = Unknown
+		hostName = unknown
 	}
 
 	return hostName

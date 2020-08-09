@@ -5,13 +5,13 @@
 package rk_query
 
 const (
-	ScopeDelimiter   = "------------------------------------------------------------------------"
-	EOE              = "EOE"
-	Unknown          = "Unknown"
-	Truncated        = "TRUNCATED"
-	CommaTruncated   = ",TRUNCATED"
-	MaxHistoryLength = 1024
-	OpenMarker       = "-open-"
+	scopeDelimiter   = "------------------------------------------------------------------------"
+	eoe              = "EOE"
+	unknown          = "Unknown"
+	truncated        = "TRUNCATED"
+	commaTruncated   = ",TRUNCATED"
+	maxHistoryLength = 1024
+	openMarker       = "-open-"
 	appNameKey       = "app_name"
 	hostnameKey      = "hostname"
 	eventIdKey       = "event_id"

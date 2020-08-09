@@ -127,11 +127,11 @@ func (tracker *timeTracker) ToZapFields(enc *zapcore.MapObjectEncoder) []zap.Fie
 	elapsedMS := tracker.elapsedTotalMS + tracker.indexCurr*(nowMS-tracker.lastTimestampMS)
 
 	if enc != nil {
-		enc.AddInt64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", tracker.elapsedTotalMS)
-		enc.AddInt64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal)
+		enc.AddInt64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", tracker.elapsedTotalMS)
+		enc.AddInt64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal)
 	}
 	return []zap.Field{
-		zap.Int64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", elapsedMS),
-		zap.Int64(tracker.name+OpenMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal),
+		zap.Int64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", elapsedMS),
+		zap.Int64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal),
 	}
 }

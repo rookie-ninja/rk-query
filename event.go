@@ -68,7 +68,7 @@ type Event interface {
 
 	setLogger(*zap.Logger)
 
-	setFormat(Format)
+	setFormat(format)
 
 	setQuietMode(bool)
 
