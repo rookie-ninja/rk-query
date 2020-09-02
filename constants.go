@@ -27,4 +27,7 @@ const (
 	pairKey          = "pair"
 	errKey           = "error"
 	fieldKey         = "field"
+	timezoneKey      = "timezone"
+	osKey            = "os"
+	archKey          = "arch"
 )

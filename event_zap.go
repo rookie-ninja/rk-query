@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"reflect"
+	"runtime"
 	"time"
 )
 
@@ -383,6 +384,12 @@ func (event *eventZap) toRkFormat() string {
 		builder.WriteString("\n")
 	}
 
+	// record timezone, os and arch
+	zone, _ := time.Now().Zone()
+	builder.WriteString(fmt.Sprintf("%s=%s\n", timezoneKey, zone))
+	builder.WriteString(fmt.Sprintf("%s=%s\n", osKey, runtime.GOOS))
+	builder.WriteString(fmt.Sprintf("%s=%s\n", archKey, runtime.GOARCH))
+
 	builder.WriteString(eoe)
 	return builder.String()
 }
@@ -441,6 +448,13 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 		event.getEventHistory().appendTo(builder)
 		fields = append(fields, zap.String(historyKey, builder.String()))
 	}
+
+	// record timezone, os and arch
+	zone, _ := time.Now().Zone()
+	fields = append(fields,
+		zap.String(timezoneKey, zone),
+		zap.String(osKey, runtime.GOOS),
+		zap.String(archKey, runtime.GOARCH))
 
 	return fields
 }
