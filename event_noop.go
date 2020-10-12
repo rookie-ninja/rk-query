@@ -82,6 +82,9 @@ func (eventNoop) AddPair(string, string) {}
 func (eventNoop) AddErr(error) {
 }
 
+func (eventNoop) SetResCode(string) {
+}
+
 func (eventNoop) GetErrCount(error) int64 {
 	return 0
 }

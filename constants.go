@@ -15,6 +15,7 @@ const (
 	appNameKey       = "app_name"
 	hostnameKey      = "hostname"
 	eventIdKey       = "event_id"
+	resCodeKey       = "res_code"
 	operationKey     = "operation"
 	remoteAddrKey    = "remote_addr"
 	eventStatusKey   = "event_status"

@@ -66,6 +66,7 @@ func withEventJSONFormat() {
 	event.SetCounter("count", 1)
 	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
 	event.AddErr(MyError{})
+	event.SetResCode("200")
 	event.SetEndTime(time.Now())
 	event.WriteLog()
 }
@@ -88,6 +89,7 @@ func withEventRkFormat() {
 	event.SetCounter("count", 1)
 	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
 	event.AddErr(MyError{})
+	event.SetResCode("200")
 	event.SetEndTime(time.Now())
 	event.WriteLog()
 }

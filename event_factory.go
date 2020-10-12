@@ -5,10 +5,44 @@
 package rk_query
 
 import (
+	"github.com/rookie-ninja/rk-logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"sync"
+)
+
+var (
+	configs = []byte(`{
+     "level": "info",
+     "encoding": "console",
+     "outputPaths": ["stdout"],
+     "errorOutputPaths": ["stderr"],
+     "initialFields": {},
+     "encoderConfig": {
+       "messageKey": "msg",
+       "levelKey": "",
+       "nameKey": "",
+       "timeKey": "",
+       "callerKey": "",
+       "stacktraceKey": "",
+       "callstackKey": "",
+       "errorKey": "",
+       "timeEncoder": "iso8601",
+       "fileKey": "",
+       "levelEncoder": "capital",
+       "durationEncoder": "second",
+       "callerEncoder": "full",
+       "nameEncoder": "full"
+     },
+    "maxsize": 1,
+    "maxage": 7,
+    "maxbackups": 3,
+    "localtime": true,
+    "compress": true
+   }`)
+
+	defaultLogger, _, _ = rk_logger.NewZapLoggerWithBytes(configs, rk_logger.JSON)
 )
 
 type EventOption func(Event)
@@ -81,7 +115,7 @@ func (factory *EventFactory) GetAppName() string {
 
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &eventZap{
-		logger:     zap.NewNop(),
+		logger:     defaultLogger,
 		format:     RK,
 		status:     notStarted,
 		appName:    unknown,
@@ -124,7 +158,7 @@ func (factory *EventFactory) CreateEventThreadSafe(options ...EventOption) Event
 	event := factory.CreateEvent(options...)
 	return &eventThreadSafe{
 		delegate: event,
-		lock: &sync.Mutex{},
+		lock:     &sync.Mutex{},
 	}
 }
 

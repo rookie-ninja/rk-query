@@ -77,6 +77,7 @@ type eventZap struct {
 	operation    string
 	remoteAddr   string
 	eventId      string
+	resCode      string
 	endTime      time.Time
 	startTime    time.Time
 	status       eventStatus
@@ -125,6 +126,10 @@ func (event *eventZap) GetOperation() string {
 
 func (event *eventZap) SetOperation(operation string) {
 	event.operation = operation
+}
+
+func (event *eventZap) SetResCode(resCode string) {
+	event.resCode = resCode
 }
 
 func (event *eventZap) GetEventStatus() eventStatus {
@@ -377,6 +382,10 @@ func (event *eventZap) toRkFormat() string {
 	builder.WriteString(fmt.Sprintf("%s=%s\n", operationKey, event.GetOperation()))
 	// status
 	builder.WriteString(fmt.Sprintf("%s=%s\n", eventStatusKey, event.GetEventStatus().String()))
+	// resCode
+	if len(event.resCode) > 0 {
+		builder.WriteString(fmt.Sprintf("%s=%s\n", resCodeKey, event.resCode))
+	}
 	// history
 	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
 		builder.WriteString(historyKey + "=")
@@ -415,7 +424,10 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	if len(event.eventId) > 1 {
 		fields = append(fields, zap.String(eventIdKey, event.GetEventId()))
 	}
-
+	// resCode
+	if len(event.resCode) > 0 {
+		fields = append(fields, zap.String(resCodeKey, event.resCode))
+	}
 	// timing
 	fields = append(fields, event.marshalTimerField())
 	// counters

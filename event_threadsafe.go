@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type eventThreadSafe struct{
+type eventThreadSafe struct {
 	delegate Event
 	lock     *sync.Mutex
 }
@@ -186,11 +186,18 @@ func (event *eventThreadSafe) AddErr(err error) {
 	event.delegate.AddErr(err)
 }
 
+func (event *eventThreadSafe) SetResCode(resCode string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.SetResCode(resCode)
+}
+
 func (event *eventThreadSafe) GetErrCount(err error) int64 {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	return  event.delegate.GetErrCount(err)
+	return event.delegate.GetErrCount(err)
 }
 
 func (event *eventThreadSafe) AddFields(fields ...zap.Field) {

@@ -50,11 +50,13 @@ type Event interface {
 
 	SetCounter(string, int64)
 
-	InCCounter (string, int64)
+	InCCounter(string, int64)
 
 	AddPair(string, string)
 
 	AddErr(error)
+
+	SetResCode(string)
 
 	GetErrCount(error) int64
 
