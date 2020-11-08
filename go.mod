@@ -3,7 +3,6 @@ module github.com/rookie-ninja/rk-query
 go 1.14
 
 require (
-	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rookie-ninja/rk-logger v1.0.3
 	github.com/spf13/cast v1.3.1

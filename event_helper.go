@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	stdLoggerConfigBytes = []byte(`{
+	StdLoggerConfigBytes = []byte(`{
      "level": "info",
      "encoding": "console",
      "outputPaths": ["stdout"],
@@ -39,7 +39,7 @@ var (
     "compress": true
    }`)
 
-	StdoutLogger, _, _ = rk_logger.NewZapLoggerWithBytes(stdLoggerConfigBytes, rk_logger.JSON)
+	StdoutLogger, _, _ = rk_logger.NewZapLoggerWithBytes(StdLoggerConfigBytes, rk_logger.JSON)
 )
 
 // A helper function for easy use of EventData
