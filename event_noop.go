@@ -1,4 +1,4 @@
-package rk_query
+package rkquery
 
 import (
 	"go.uber.org/zap"

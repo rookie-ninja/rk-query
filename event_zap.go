@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_query
+package rkquery
 
 import (
 	"bytes"
@@ -352,7 +352,7 @@ func (event *eventZap) toRkFormat() string {
 	}
 	builder.WriteString(fmt.Sprintf("%s=%s\n", startTimeKey, event.GetStartTime().Format(time.RFC3339Nano)))
 	// time
-	builder.WriteString(fmt.Sprintf("%s=%d\n", timeKey, event.GetEndTime().Sub(event.GetStartTime()).Milliseconds()))
+	builder.WriteString(fmt.Sprintf("%s=%d\n", elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()))
 	// hostname
 	builder.WriteString(fmt.Sprintf("%s=%s\n", hostnameKey, event.GetHostname()))
 	// eventId
@@ -416,8 +416,8 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 		event.SetStartTime(time.Now())
 	}
 	fields = append(fields, zap.Time(startTimeKey, event.GetStartTime()))
-	// time
-	fields = append(fields, zap.Int64(timeKey, event.GetEndTime().Sub(event.GetStartTime()).Milliseconds()))
+	// elapsed
+	fields = append(fields, zap.Int64(elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()))
 	// hostname
 	fields = append(fields, zap.String(hostnameKey, event.GetHostname()))
 	// eventId

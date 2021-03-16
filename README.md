@@ -76,7 +76,7 @@ Output
 ------------------------------------------------------------------------
 end_time=2020-07-30T03:42:22.393874+08:00
 start_time=2020-07-30T03:42:21.390642+08:00
-time=1003
+elapsed_nano=1004000000
 hostname=MYLOCAL
 timing={"t1.count":1,"t1.elapsed_ms":1003}
 counter={"count":1}
@@ -155,7 +155,7 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
 {
     "end_time":"2020-07-30T03:42:23.398+0800",
     "start_time":"2020-07-30T03:42:22.394+0800",
-    "time":1004,
+    "elapsed_nano":1004000000,
     "hostname":"MYLOCAL",
     "timing":{
         "t1.count":1,

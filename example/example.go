@@ -34,7 +34,7 @@ var (
        "callerEncoder": "full",
        "nameEncoder": "full"
      },
-    "maxsize": 1,
+    "maxsize": 1024,
     "maxage": 7,
     "maxbackups": 3,
     "localtime": true,
@@ -49,13 +49,13 @@ func main() {
 }
 
 func withEventJSONFormat() {
-	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
-	fac := rk_query.NewEventFactory(
-		rk_query.WithAppName("appName"),
-		rk_query.WithFormat(rk_query.JSON),
-		rk_query.WithOperation("op"),
-		rk_query.WithLogger(logger))
+	fac := rkquery.NewEventFactory(
+		rkquery.WithAppName("appName"),
+		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithOperation("op"),
+		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -72,13 +72,13 @@ func withEventJSONFormat() {
 }
 
 func withEventRkFormat() {
-	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
-	fac := rk_query.NewEventFactory(
-		rk_query.WithAppName("appName"),
-		rk_query.WithFormat(rk_query.RK),
-		rk_query.WithOperation("op"),
-		rk_query.WithLogger(logger))
+	fac := rkquery.NewEventFactory(
+		rkquery.WithAppName("appName"),
+		rkquery.WithFormat(rkquery.RK),
+		rkquery.WithOperation("op"),
+		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -95,8 +95,8 @@ func withEventRkFormat() {
 }
 
 func withEventHelper() {
-	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
-	helper := rk_query.NewEventHelper(rk_query.NewEventFactory(rk_query.WithLogger(logger)))
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
+	helper := rkquery.NewEventHelper(rkquery.NewEventFactory(rkquery.WithLogger(logger)))
 
 	event := helper.Start("op")
 	helper.Finish(event)

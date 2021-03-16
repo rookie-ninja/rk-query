@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/rookie-ninja/rk-logger v1.0.3
+	github.com/rookie-ninja/rk-logger v1.0.7
 	github.com/spf13/cast v1.3.1
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.15.0

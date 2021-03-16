@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_query
+package rkquery
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -24,5 +24,5 @@ func TestEventFactory_CreateEvent_WithAppName(t *testing.T) {
 	fac := NewEventFactory()
 	event := fac.CreateEvent(WithAppName("app"))
 	assert.NotNil(t, event)
-	assert.Equal(t, "appName", event.GetAppName())
+	assert.Equal(t, "app", event.GetAppName())
 }

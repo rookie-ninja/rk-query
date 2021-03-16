@@ -2,7 +2,7 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-package rk_query
+package rkquery
 
 import (
 	rk_logger "github.com/rookie-ninja/rk-logger"
@@ -43,18 +43,18 @@ var (
 )
 
 // A helper function for easy use of EventData
-type eventHelper struct {
+type EventHelper struct {
 	Factory *EventFactory
 }
 
-func NewEventHelper(factory *EventFactory) *eventHelper {
+func NewEventHelper(factory *EventFactory) *EventHelper {
 	if factory == nil {
 		factory = NewEventFactory()
 	}
-	return &eventHelper{factory}
+	return &EventHelper{factory}
 }
 
-func (helper *eventHelper) Start(operation string) Event {
+func (helper *EventHelper) Start(operation string) Event {
 	event := helper.Factory.CreateEvent()
 
 	event.SetOperation(operation)
@@ -62,12 +62,12 @@ func (helper *eventHelper) Start(operation string) Event {
 	return event
 }
 
-func (helper *eventHelper) Finish(event Event) {
+func (helper *EventHelper) Finish(event Event) {
 	event.SetEndTime(time.Now())
 	event.WriteLog()
 }
 
-func (helper *eventHelper) FinishWithCond(event Event, success bool) {
+func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
 	} else {
@@ -77,7 +77,7 @@ func (helper *eventHelper) FinishWithCond(event Event, success bool) {
 	helper.Finish(event)
 }
 
-func (helper *eventHelper) FinishWithError(event Event, err error) {
+func (helper *EventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
 	}
