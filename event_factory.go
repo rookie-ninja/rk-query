@@ -76,10 +76,6 @@ func NewEventFactory(option ...EventOption) *EventFactory {
 	return factory
 }
 
-func (factory *EventFactory) GetAppName() string {
-	return factory.appName
-}
-
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &eventZap{
 		logger:     rklogger.EventLogger,

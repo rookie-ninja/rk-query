@@ -7,7 +7,7 @@ package rkquery
 const (
 	scopeDelimiter   = "------------------------------------------------------------------------"
 	eoe              = "EOE"
-	unknown          = "Unknown"
+	unknown          = "unknown"
 	truncated        = "TRUNCATED"
 	commaTruncated   = ",TRUNCATED"
 	maxHistoryLength = 1024
