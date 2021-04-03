@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [rk-query](#rk-query)
+  - [Installation](#installation)
+  - [Quick Start](#quick-start)
+    - [With Rk format](#with-rk-format)
+    - [With JSON format](#with-json-format)
+    - [Development Status: Stable](#development-status-stable)
+    - [Contributing](#contributing)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # rk-query
 Human readable query logger with zap logger
 
