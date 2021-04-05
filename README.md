@@ -1,23 +1,18 @@
+# rk-query
+Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberjack](https://github.com/natefinch/lumberjack) and [rk-logger](https://github.com/rookie-ninja/rk-logger)
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [rk-query](#rk-query)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-    - [With Rk format](#with-rk-format)
-    - [With JSON format](#with-json-format)
-    - [Development Status: Stable](#development-status-stable)
-    - [Contributing](#contributing)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [With Rk format](#with-rk-format)
+  - [With JSON format](#with-json-format)
+  - [Development Status: Stable](#development-status-stable)
+  - [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# rk-query
-Human readable query logger with zap logger
-
-- [zap](https://github.com/uber-go/zap)
-- [lumberjack](https://github.com/natefinch/lumberjack)
-- [rk-logger](https://github.com/rookie-ninja/rk-logger)
 
 ## Installation
 `go get -u rookie-ninja/rk-query`
@@ -33,7 +28,7 @@ It is human friendly printed query log format
 Example:
 ```go
 var (
-	bytes = []byte(`{
+    bytes = []byte(`{
      "level": "info",
      "encoding": "console",
      "outputPaths": ["stdout"],
@@ -55,7 +50,7 @@ var (
        "callerEncoder": "full",
        "nameEncoder": "full"
      },
-    "maxsize": 1,
+    "maxsize": 1024,
     "maxage": 7,
     "maxbackups": 3,
     "localtime": true,
@@ -64,13 +59,13 @@ var (
 )
 
 func withEventRkFormat() {
-	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventFactory(
-		rk_query.WithAppName("appName"),
-		rk_query.WithFormat(rk_query.RK),
-		rk_query.WithOperation("op"),
-		rk_query.WithLogger(logger))
+	fac := rkquery.NewEventFactory(
+		rkquery.WithAppName("appName"),
+		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithOperation("op"),
+		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -111,7 +106,7 @@ It is parsing friendly printed query log format
 Example:
 ```go
 var (
-	bytes = []byte(`{
+    bytes = []byte(`{
      "level": "info",
      "encoding": "console",
      "outputPaths": ["stdout"],
@@ -133,7 +128,7 @@ var (
        "callerEncoder": "full",
        "nameEncoder": "full"
      },
-    "maxsize": 1,
+    "maxsize": 1024,
     "maxage": 7,
     "maxbackups": 3,
     "localtime": true,
@@ -142,13 +137,13 @@ var (
 )
 
 func withEventJSONFormat() {
-	logger, _, _ := rk_logger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
-	fac := rk_query.NewEventFactory(
-		rk_query.WithAppName("appName"),
-		rk_query.WithFormat(rk_query.JSON),
-		rk_query.WithOperation("op"),
-		rk_query.WithLogger(logger))
+	fac := rkquery.NewEventFactory(
+		rkquery.WithAppName("appName"),
+		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithOperation("op"),
+		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -196,7 +191,6 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
 }
 ```
 
-
 ### Development Status: Stable
 
 ### Contributing
@@ -207,8 +201,6 @@ issues and pull requests, but you can also report any negative conduct to
 dongxuny@gmail.com. That email list is a private, safe space; even the zap
 maintainers don't have access, so don't hesitate to hold us to a high
 standard.
-
-<hr>
 
 Released under the [MIT License](LICENSE).
 

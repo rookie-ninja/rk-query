@@ -64,7 +64,6 @@ func WithFields(fields []zap.Field) EventOption {
 
 // Not thread safe!!!
 type EventFactory struct {
-	appName string
 	options []EventOption
 }
 
@@ -101,8 +100,6 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 		opt := options[i]
 		opt(event)
 	}
-
-	factory.appName = event.GetAppName()
 
 	event.logger.Core().Sync()
 
