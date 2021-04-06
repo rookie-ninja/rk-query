@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"reflect"
 	"runtime"
 	"time"
 )
@@ -282,9 +281,10 @@ func (event *eventZap) AddErr(err error) {
 		return
 	}
 
-	name := reflect.TypeOf(err).Name()
+	name := err.Error()
+
 	if len(name) < 1 {
-		name = "std-err"
+		name = "unknown"
 	}
 
 	val, ok := event.errors.Fields[name]
@@ -296,9 +296,10 @@ func (event *eventZap) AddErr(err error) {
 }
 
 func (event *eventZap) GetErrCount(err error) int64 {
-	name := reflect.TypeOf(err).Name()
+	name := err.Error()
+
 	if len(name) < 1 {
-		name = "std-err"
+		name = "unknown"
 	}
 
 	val, ok := event.errors.Fields[name]

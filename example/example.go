@@ -102,8 +102,7 @@ func withEventHelper() {
 	helper.Finish(event)
 }
 
-type MyError struct {
-}
+type MyError struct{}
 
 func (err MyError) Error() string {
 	return ""
