@@ -1,9 +1,26 @@
 package rkquery
 
 import (
+	"context"
 	"go.uber.org/zap"
 	"time"
 )
+
+const EventKey = "rk-event-key"
+
+func GetEventFromContext(ctx context.Context) Event {
+	res := &eventNoop{}
+	if ctx == nil || ctx.Value(EventKey) == nil {
+		return res
+	}
+
+	raw := ctx.Value(EventKey)
+	if val, ok := raw.(Event); ok {
+		return val
+	}
+
+	return res
+}
 
 type Event interface {
 	GetValue(string) string
