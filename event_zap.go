@@ -72,6 +72,8 @@ type eventZap struct {
 	format       format
 	quietMode    bool
 	appName      string
+	appVersion   string
+	locale       string
 	hostname     string
 	operation    string
 	remoteAddr   string
@@ -101,6 +103,14 @@ func (event *eventZap) GetValue(key string) string {
 
 func (event *eventZap) GetAppName() string {
 	return event.appName
+}
+
+func (event *eventZap) GetAppVersion() string {
+	return event.appVersion
+}
+
+func (event *eventZap) GetLocale() string {
+	return event.locale
 }
 
 func (event *eventZap) GetEventId() string {
@@ -379,6 +389,11 @@ func (event *eventZap) toRkFormat() string {
 	builder.WriteString(fmt.Sprintf("%s=%s\n", remoteAddrKey, event.GetRemoteAddr()))
 	// app name
 	builder.WriteString(fmt.Sprintf("%s=%s\n", appNameKey, event.GetAppName()))
+	// app version
+	builder.WriteString(fmt.Sprintf("%s=%s\n", appVersionKey, event.GetAppVersion()))
+	// locale
+	builder.WriteString(fmt.Sprintf("%s=%s\n", localeKey, event.GetLocale()))
+
 	// operation
 	builder.WriteString(fmt.Sprintf("%s=%s\n", operationKey, event.GetOperation()))
 	// status
@@ -446,8 +461,15 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 
 	// remote address
 	fields = append(fields, zap.String(remoteAddrKey, event.GetRemoteAddr()))
+
 	// app name
 	fields = append(fields, zap.String(appNameKey, event.GetAppName()))
+
+	// app version
+	fields = append(fields, zap.String(appVersionKey, event.GetAppVersion()))
+
+	// locale
+	fields = append(fields, zap.String(localeKey, event.GetLocale()))
 
 	// operation
 	fields = append(fields, zap.String(operationKey, event.GetOperation()))
@@ -546,6 +568,14 @@ func (event *eventZap) setQuietMode(quietMode bool) {
 
 func (event *eventZap) setAppName(appName string) {
 	event.appName = appName
+}
+
+func (event *eventZap) setAppVersion(appVersion string) {
+	event.appVersion = appVersion
+}
+
+func (event *eventZap) setLocale(locale string) {
+	event.locale = locale
 }
 
 func (event *eventZap) setHostname(hostname string) {

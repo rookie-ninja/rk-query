@@ -13,6 +13,8 @@ const (
 	maxHistoryLength = 1024
 	openMarker       = "-open-"
 	appNameKey       = "app_name"
+	appVersionKey    = "app_version"
+	localeKey        = "locale"
 	hostnameKey      = "hostname"
 	eventIdKey       = "event_id"
 	resCodeKey       = "res_code"

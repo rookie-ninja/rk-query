@@ -15,6 +15,14 @@ func (eventNoop) GetAppName() string {
 	return ""
 }
 
+func (eventNoop) GetAppVersion() string {
+	return ""
+}
+
+func (eventNoop) GetLocale() string {
+	return ""
+}
+
 func (eventNoop) GetEventId() string {
 	return ""
 }
@@ -106,5 +114,9 @@ func (eventNoop) setFormat(format) {}
 func (eventNoop) setQuietMode(bool) {}
 
 func (eventNoop) setAppName(string) {}
+
+func (eventNoop) setAppVersion(string) {}
+
+func (eventNoop) setLocale(string) {}
 
 func (eventNoop) setHostname(string) {}

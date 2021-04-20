@@ -25,6 +25,20 @@ func (event *eventThreadSafe) GetAppName() string {
 	return event.delegate.GetAppName()
 }
 
+func (event *eventThreadSafe) GetAppVersion() string {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetAppVersion()
+}
+
+func (event *eventThreadSafe) GetLocale() string {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetLocale()
+}
+
 func (event *eventThreadSafe) GetEventId() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -254,6 +268,20 @@ func (event *eventThreadSafe) setAppName(appName string) {
 	defer event.lock.Unlock()
 
 	event.setAppName(appName)
+}
+
+func (event *eventThreadSafe) setAppVersion(appVersion string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.setAppVersion(appVersion)
+}
+
+func (event *eventThreadSafe) setLocale(locale string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.setLocale(locale)
 }
 
 func (event *eventThreadSafe) setHostname(hostname string) {

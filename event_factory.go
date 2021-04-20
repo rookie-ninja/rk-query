@@ -38,6 +38,18 @@ func WithAppName(appName string) EventOption {
 	}
 }
 
+func WithAppVersion(appVersion string) EventOption {
+	return func(event Event) {
+		event.setAppVersion(appVersion)
+	}
+}
+
+func WithLocale(locale string) EventOption {
+	return func(event Event) {
+		event.setLocale(locale)
+	}
+}
+
 func WithHostname(hostname string) EventOption {
 	return func(event Event) {
 		event.setHostname(hostname)
@@ -81,6 +93,8 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 		format:     RK,
 		status:     notStarted,
 		appName:    unknown,
+		appVersion: unknown,
+		locale:     unknown,
 		hostname:   obtainHostName(),
 		remoteAddr: obtainHostName(),
 		operation:  unknown,
