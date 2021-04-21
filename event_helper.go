@@ -54,8 +54,8 @@ func NewEventHelper(factory *EventFactory) *EventHelper {
 	return &EventHelper{factory}
 }
 
-func (helper *EventHelper) Start(operation string) Event {
-	event := helper.Factory.CreateEvent()
+func (helper *EventHelper) Start(operation string, opts ...EventOption) Event {
+	event := helper.Factory.CreateEvent(opts...)
 
 	event.SetOperation(operation)
 	event.SetStartTime(time.Now())
