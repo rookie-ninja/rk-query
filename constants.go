@@ -12,6 +12,8 @@ const (
 	commaTruncated   = ",TRUNCATED"
 	maxHistoryLength = 1024
 	openMarker       = "-open-"
+	entryNameKey     = "entry_name"
+	entryTypeKey     = "entry_type"
 	appNameKey       = "app_name"
 	appVersionKey    = "app_version"
 	localeKey        = "locale"

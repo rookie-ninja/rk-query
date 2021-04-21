@@ -74,6 +74,8 @@ type eventZap struct {
 	appName      string
 	appVersion   string
 	locale       string
+	entryName    string
+	entryType    string
 	hostname     string
 	operation    string
 	remoteAddr   string
@@ -99,6 +101,14 @@ func (event *eventZap) GetValue(key string) string {
 	} else {
 		return ""
 	}
+}
+
+func (event *eventZap) GetEntryName() string {
+	return event.entryName
+}
+
+func (event *eventZap) GetEntryType() string {
+	return event.entryType
 }
 
 func (event *eventZap) GetAppName() string {
@@ -387,10 +397,19 @@ func (event *eventZap) toRkFormat() string {
 	builder.WriteString(fmt.Sprintf("%s=%s\n", fieldKey, string(bytes)))
 	// remote address
 	builder.WriteString(fmt.Sprintf("%s=%s\n", remoteAddrKey, event.GetRemoteAddr()))
+
 	// app name
 	builder.WriteString(fmt.Sprintf("%s=%s\n", appNameKey, event.GetAppName()))
 	// app version
 	builder.WriteString(fmt.Sprintf("%s=%s\n", appVersionKey, event.GetAppVersion()))
+	// entry name
+	if len(event.GetEntryName()) > 0 {
+		builder.WriteString(fmt.Sprintf("%s=%s\n", entryNameKey, event.GetEntryName()))
+	}
+	// entry type
+	if len(event.GetEntryType()) > 0 {
+		builder.WriteString(fmt.Sprintf("%s=%s\n", entryTypeKey, event.GetEntryType()))
+	}
 	// locale
 	builder.WriteString(fmt.Sprintf("%s=%s\n", localeKey, event.GetLocale()))
 
@@ -431,11 +450,22 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	if event.GetStartTime().IsZero() {
 		event.SetStartTime(time.Now())
 	}
-	fields = append(fields, zap.Time(startTimeKey, event.GetStartTime()))
-	// elapsed
-	fields = append(fields, zap.Int64(elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()))
-	// hostname
-	fields = append(fields, zap.String(hostnameKey, event.GetHostname()))
+
+	fields = append(fields,
+		zap.Time(startTimeKey, event.GetStartTime()),
+		zap.Int64(elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()),
+		zap.String(hostnameKey, event.GetHostname()),
+		event.marshalTimerField(),
+		zap.Any(counterKey, event.counters.Fields),
+		zap.Any(pairKey, event.pairs.Fields),
+		zap.Any(errKey, event.errors.Fields),
+		zap.String(remoteAddrKey, event.GetRemoteAddr()),
+		zap.String(appNameKey, event.GetAppName()),
+		zap.String(appVersionKey, event.GetAppVersion()),
+		zap.String(localeKey, event.GetLocale()),
+		zap.String(operationKey, event.GetOperation()),
+		zap.String(eventStatusKey, event.GetEventStatus().String()))
+
 	// eventId
 	if len(event.eventId) > 1 {
 		fields = append(fields, zap.String(eventIdKey, event.GetEventId()))
@@ -444,14 +474,7 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	if len(event.resCode) > 0 {
 		fields = append(fields, zap.String(resCodeKey, event.resCode))
 	}
-	// timing
-	fields = append(fields, event.marshalTimerField())
-	// counters
-	fields = append(fields, zap.Any(counterKey, event.counters.Fields))
-	// pairs
-	fields = append(fields, zap.Any(pairKey, event.pairs.Fields))
-	// err
-	fields = append(fields, zap.Any(errKey, event.errors.Fields))
+
 	// fields
 	enc := zapcore.NewMapObjectEncoder()
 	for _, v := range event.fields {
@@ -459,23 +482,15 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	}
 	fields = append(fields, zap.Any(fieldKey, enc.Fields))
 
-	// remote address
-	fields = append(fields, zap.String(remoteAddrKey, event.GetRemoteAddr()))
+	// entry name
+	if len(event.GetEntryType()) > 0 {
+		fields = append(fields, zap.String(entryNameKey, event.GetEntryName()))
+	}
 
-	// app name
-	fields = append(fields, zap.String(appNameKey, event.GetAppName()))
-
-	// app version
-	fields = append(fields, zap.String(appVersionKey, event.GetAppVersion()))
-
-	// locale
-	fields = append(fields, zap.String(localeKey, event.GetLocale()))
-
-	// operation
-	fields = append(fields, zap.String(operationKey, event.GetOperation()))
-
-	// status
-	fields = append(fields, zap.String(eventStatusKey, event.GetEventStatus().String()))
+	// entry type
+	if len(event.GetEntryType()) > 0 {
+		fields = append(fields, zap.String(entryTypeKey, event.GetEntryType()))
+	}
 
 	// history
 	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
@@ -564,6 +579,14 @@ func (event *eventZap) setFormat(format format) {
 
 func (event *eventZap) setQuietMode(quietMode bool) {
 	event.quietMode = quietMode
+}
+
+func (event *eventZap) setEntryName(entryName string) {
+	event.entryName = entryName
+}
+
+func (event *eventZap) setEntryType(entryType string) {
+	event.entryType = entryType
 }
 
 func (event *eventZap) setAppName(appName string) {

@@ -75,6 +75,8 @@ func withEventRkFormat() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
 	fac := rkquery.NewEventFactory(
+		rkquery.WithEntryName("entry-example"),
+		rkquery.WithEntryType("example"),
 		rkquery.WithAppName("appName"),
 		rkquery.WithAppVersion("v0.0.1"),
 		rkquery.WithLocale("rk::ap-guangzhou::ap-guangzhou-1::beta"),

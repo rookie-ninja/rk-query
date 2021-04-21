@@ -18,6 +18,20 @@ func (event *eventThreadSafe) GetValue(key string) string {
 	return event.delegate.GetValue(key)
 }
 
+func (event *eventThreadSafe) GetEntryName() string {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetEntryName()
+}
+
+func (event *eventThreadSafe) GetEntryType() string {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetEntryType()
+}
+
 func (event *eventThreadSafe) GetAppName() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -261,6 +275,20 @@ func (event *eventThreadSafe) setQuietMode(quietMode bool) {
 	defer event.lock.Unlock()
 
 	event.setQuietMode(quietMode)
+}
+
+func (event *eventThreadSafe) setEntryName(entryName string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.setEntryName(entryName)
+}
+
+func (event *eventThreadSafe) setEntryType(entryType string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.setEntryType(entryType)
 }
 
 func (event *eventThreadSafe) setAppName(appName string) {

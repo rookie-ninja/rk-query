@@ -11,6 +11,14 @@ func (eventNoop) GetValue(string) string {
 	return ""
 }
 
+func (eventNoop) GetEntryName() string {
+	return ""
+}
+
+func (eventNoop) GetEntryType() string {
+	return ""
+}
+
 func (eventNoop) GetAppName() string {
 	return ""
 }
@@ -112,6 +120,10 @@ func (eventNoop) setLogger(*zap.Logger) {}
 func (eventNoop) setFormat(format) {}
 
 func (eventNoop) setQuietMode(bool) {}
+
+func (eventNoop) setEntryName(string) {}
+
+func (eventNoop) setEntryType(string) {}
 
 func (eventNoop) setAppName(string) {}
 

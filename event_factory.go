@@ -32,6 +32,18 @@ func WithQuietMode(quietMode bool) EventOption {
 	}
 }
 
+func WithEntryName(entryName string) EventOption {
+	return func(event Event) {
+		event.setEntryName(entryName)
+	}
+}
+
+func WithEntryType(entryType string) EventOption {
+	return func(event Event) {
+		event.setEntryType(entryType)
+	}
+}
+
 func WithAppName(appName string) EventOption {
 	return func(event Event) {
 		event.setAppName(appName)
@@ -92,6 +104,8 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 		logger:     rklogger.EventLogger,
 		format:     RK,
 		status:     notStarted,
+		entryName:  "",
+		entryType:  "",
 		appName:    unknown,
 		appVersion: unknown,
 		locale:     unknown,

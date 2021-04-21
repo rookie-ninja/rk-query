@@ -12,6 +12,10 @@ type Event interface {
 
 	GetAppVersion() string
 
+	GetEntryName() string
+
+	GetEntryType() string
+
 	GetLocale() string
 
 	GetEventId() string
@@ -81,6 +85,10 @@ type Event interface {
 	setAppName(string)
 
 	setAppVersion(string)
+
+	setEntryName(string)
+
+	setEntryType(string)
 
 	setLocale(string)
 
