@@ -83,19 +83,19 @@ func withEventRkFormat() {
 Output
 ```
 ------------------------------------------------------------------------
-end_time=2020-07-30T03:42:22.393874+08:00
-start_time=2020-07-30T03:42:21.390642+08:00
-elapsed_nano=1004000000
+endTime=2020-07-30T03:42:22.393874+08:00
+startTime=2020-07-30T03:42:21.390642+08:00
+elapsedNano=1004000000
 hostname=MYLOCAL
 timing={"t1.count":1,"t1.elapsed_ms":1003}
 counter={"count":1}
 pair={"key":"value"}
 error={"MyError":1}
 field={"f1":"f2","t2":"2020-07-30T03:42:22.393857+08:00"}
-remote_addr=Unknown
-app_name=appName
+remoteAddr=Unknown
+appName=appName
 operation=Unknown
-event_status=Ended
+eventStatus=Ended
 history=s-t1:1596051741390,e-t1:1003,end:0
 EOE
 ```
@@ -162,9 +162,9 @@ Output
 We formatted JSON output bellow, actual logs would not be a pretty formatted JSON
 ```
 {
-    "end_time":"2020-07-30T03:42:23.398+0800",
-    "start_time":"2020-07-30T03:42:22.394+0800",
-    "elapsed_nano":1004000000,
+    "endTime":"2020-07-30T03:42:23.398+0800",
+    "startTime":"2020-07-30T03:42:22.394+0800",
+    "elapsedNano":1004000000,
     "hostname":"MYLOCAL",
     "timing":{
         "t1.count":1,
@@ -183,10 +183,10 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
         "f1":"f2",
         "t2":"2020-07-30T03:42:23.398282+08:00"
     },
-    "remote_addr":"Unknown",
-    "app_name":"appName",
+    "remoteAddr":"Unknown",
+    "appName":"appName",
     "operation":"op",
-    "event_status":"Ended",
+    "eventStatus":"Ended",
     "history":"s-t1:1596051742394,e-t1:1004,end:0"
 }
 ```
