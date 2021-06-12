@@ -23,6 +23,7 @@ const (
 	// ************* Env *************
 	envKey      = "env"
 	hostnameKey = "hostname"
+	localIpKey  = "localIP"
 	realmKey    = "realm"
 	regionKey   = "region"
 	azKey       = "az"

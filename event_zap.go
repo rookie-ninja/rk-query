@@ -74,7 +74,6 @@ type eventZap struct {
 	appVersion string                    // Application
 	entryName  string                    // Application
 	entryType  string                    // Application
-	hostname   string                    // Environment
 	eventId    string                    // Ids
 	traceId    string                    // Ids
 	requestId  string                    // Ids
@@ -403,7 +402,7 @@ func (event *eventZap) toRkFormat() string {
 	// timezone=CST
 	// ids={"eventId":"6a2f84a8-a09a-42dc-bc9e-cabc7977345d"}
 	// app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
-	// env={"arch":"amd64","hostname":"lark.local","realm":"rk","region":"ap-guangzhou","az":"ap-guangzhou-1","domain":"beta","os":"darwin"}
+	// env={"arch":"amd64","hostname":"lark.local","localIP":"localhost","realm":"rk","region":"ap-guangzhou","az":"ap-guangzhou-1","domain":"beta","os":"darwin"}
 	// payloads={"f1":"f2","t2":"2021-06-13T00:24:20.256276+08:00"}
 	// error={"my error":1}
 	// counters={"count":1}
@@ -495,6 +494,7 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	//	"env":{
 	//	    "arch":"amd64",
 	//		"hostname":"lark.local",
+	//      "localIP":"localhost"
 	//		"realm":"*",
 	//		"region":"*",
 	//		"az":"*",
@@ -575,7 +575,8 @@ func (event *eventZap) marshalPayloads() string {
 // Construct env to zapcore.MapObjectEncoder
 func (event *eventZap) envToMapObjectEncoder() *zapcore.MapObjectEncoder {
 	enc := zapcore.NewMapObjectEncoder()
-	enc.AddString(hostnameKey, event.hostname)
+	enc.AddString(hostnameKey, hostname)
+	enc.AddString(localIpKey, localIp)
 	enc.AddString(realmKey, realm)
 	enc.AddString(regionKey, region)
 	enc.AddString(azKey, az)

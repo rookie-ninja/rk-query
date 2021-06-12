@@ -9,8 +9,11 @@ import (
 	"github.com/rookie-ninja/rk-logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"net"
 	"os"
+	"regexp"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -21,10 +24,12 @@ const (
 )
 
 var (
-	realm  = getDefaultIfEmptyString(os.Getenv("REALM"), "*")
-	region = getDefaultIfEmptyString(os.Getenv("REGION"), "*")
-	az     = getDefaultIfEmptyString(os.Getenv("AZ"), "*")
-	domain = getDefaultIfEmptyString(os.Getenv("DOMAIN"), "*")
+	realm    = getDefaultIfEmptyString(os.Getenv("REALM"), "*")
+	region   = getDefaultIfEmptyString(os.Getenv("REGION"), "*")
+	az       = getDefaultIfEmptyString(os.Getenv("AZ"), "*")
+	domain   = getDefaultIfEmptyString(os.Getenv("DOMAIN"), "*")
+	localIp  = getLocalIP()
+	hostname = getHostName()
 )
 
 type EventOption func(Event)
@@ -151,7 +156,6 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 		appVersion: unknown,
 		entryName:  unknown,
 		entryType:  unknown,
-		hostname:   obtainHostName(),
 		eventId:    generateEventId(),
 		traceId:    "",
 		requestId:  "",
@@ -198,7 +202,7 @@ func (factory *EventFactory) CreateEventThreadSafe(options ...EventOption) Event
 }
 
 // Get hostname of current machine.
-func obtainHostName() string {
+func getHostName() string {
 	hostName, err := os.Hostname()
 
 	// In this version, we will ignore errors returned by OS
@@ -238,4 +242,32 @@ func getDefaultIfEmptyString(origin, def string) string {
 	}
 
 	return origin
+}
+
+// This is a tricky function.
+// We will iterate through all the network interfaces，but will choose the first one since we are assuming that
+// eth0 will be the default one to use in most of the case.
+//
+// Currently, we do not have any interfaces for selecting the network interface yet.
+func getLocalIP() string {
+	localIP := "localhost"
+
+	// skip the error since we don't want to break RPC calls because of it
+	addresses, err := net.InterfaceAddrs()
+	if err != nil {
+		return localIP
+	}
+
+	for _, addr := range addresses {
+		items := strings.Split(addr.String(), "/")
+		if len(items) < 2 || items[0] == "127.0.0.1" {
+			continue
+		}
+
+		if match, err := regexp.MatchString(`\d+\.\d+\.\d+\.\d+`, items[0]); err == nil && match {
+			localIP = items[0]
+		}
+	}
+
+	return localIP
 }
