@@ -1,5 +1,5 @@
 .PHONY: all
-all: test lint readme fmt
+all: test lint readme fmt gomod
 
 .PHONY: lint
 lint:
@@ -20,3 +20,8 @@ fmt:
 readme:
 	@echo "running doctoc..."
 	@doctoc . 2>&1
+
+.PHONY: gomod
+gomod:
+	@echo "running gomod tidy..."
+	@go mod tidy

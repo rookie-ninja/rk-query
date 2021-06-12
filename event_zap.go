@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -11,16 +11,15 @@ import (
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"runtime"
 	"time"
 )
 
 type eventStatus int
 
 const (
-	notStarted eventStatus = 0
-	inProgress eventStatus = 1
-	ended      eventStatus = 2
+	NotStarted eventStatus = 0
+	InProgress eventStatus = 1
+	Ended      eventStatus = 2
 )
 
 func (status eventStatus) String() string {
@@ -30,7 +29,7 @@ func (status eventStatus) String() string {
 		"Ended",
 	}
 
-	if status < notStarted || status > ended {
+	if status < NotStarted || status > Ended {
 		return "Unknown"
 	}
 
@@ -68,234 +67,112 @@ func ToFormat(f string) format {
 
 // It is not thread safe.
 type eventZap struct {
-	logger       *zap.Logger
-	format       format
-	quietMode    bool
-	appName      string
-	appVersion   string
-	locale       string
-	entryName    string
-	entryType    string
-	hostname     string
-	operation    string
-	remoteAddr   string
-	eventId      string
-	resCode      string
-	endTime      time.Time
-	startTime    time.Time
-	status       eventStatus
-	counters     *zapcore.MapObjectEncoder
-	pairs        *zapcore.MapObjectEncoder
-	errors       *zapcore.MapObjectEncoder
-	fields       []zap.Field
-	eventHistory *eventHistory
-	tracker      map[string]*timeTracker
+	logger     *zap.Logger
+	format     format
+	quietMode  bool
+	appName    string                    // Application
+	appVersion string                    // Application
+	entryName  string                    // Application
+	entryType  string                    // Application
+	hostname   string                    // Environment
+	locale     string                    // Environment
+	eventId    string                    // Ids
+	traceId    string                    // Ids
+	requestId  string                    // Ids
+	endTime    time.Time                 // Time
+	startTime  time.Time                 // Time
+	timeZone   string                    // Time
+	payloads   []zap.Field               // Payloads
+	errors     *zapcore.MapObjectEncoder // Error
+	operation  string                    // Event
+	remoteAddr string                    // Event
+	resCode    string                    // Event
+	status     eventStatus               // Event
+	pairs      *zapcore.MapObjectEncoder // Event
+	counters   *zapcore.MapObjectEncoder // Event
+	tracker    map[string]*timeTracker   // Event
 }
 
-func (event *eventZap) GetValue(key string) string {
-	val, ok := event.pairs.Fields[key]
-	str := cast.ToString(val)
+// ************* Time *************
 
-	if ok && len(str) > 0 {
-		return str
-	} else {
-		return ""
-	}
-}
-
-func (event *eventZap) GetEntryName() string {
-	return event.entryName
-}
-
-func (event *eventZap) GetEntryType() string {
-	return event.entryType
-}
-
-func (event *eventZap) GetAppName() string {
-	return event.appName
-}
-
-func (event *eventZap) GetAppVersion() string {
-	return event.appVersion
-}
-
-func (event *eventZap) GetLocale() string {
-	return event.locale
-}
-
-func (event *eventZap) GetEventId() string {
-	return event.eventId
-}
-
-func (event *eventZap) SetEventId(id string) {
-	event.eventId = id
-}
-
-func (event *eventZap) GetHostname() string {
-	return event.hostname
-}
-
-func (event *eventZap) GetLogger() *zap.Logger {
-	return event.logger
-}
-
-func (event *eventZap) GetOperation() string {
-	return event.operation
-}
-
-func (event *eventZap) SetOperation(operation string) {
-	event.operation = operation
-}
-
-func (event *eventZap) SetResCode(resCode string) {
-	event.resCode = resCode
-}
-
-func (event *eventZap) GetEventStatus() eventStatus {
-	return event.status
-}
-
+// Set start timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
 func (event *eventZap) SetStartTime(curr time.Time) {
 	event.startTime = curr
-	event.status = inProgress
+	event.status = InProgress
 }
 
+// Get start time of current event data.
 func (event *eventZap) GetStartTime() time.Time {
 	return event.startTime
 }
 
-func (event *eventZap) GetEndTime() time.Time {
-	return event.endTime
-}
-
+// Set end timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
 func (event *eventZap) SetEndTime(curr time.Time) {
-	if event.status != inProgress {
+	if event.status != InProgress {
 		return
 	}
 
 	event.endTime = curr
-
-	if event.producesHistory() && event.eventHistory.builder.Len() > 0 {
-		event.eventHistory.elapsedMS("end", toMillisecond(curr))
-	}
-
-	event.status = ended
+	event.status = Ended
 }
 
-func (event *eventZap) StartTimer(name string) {
-	if !event.inProgress() || len(name) < 1 {
-		return
-	}
-
-	_, contains := event.tracker[name]
-
-	if !contains {
-		tracker := newTimeTracker(name)
-		if tracker == nil {
-			return
-		}
-
-		event.tracker[name] = tracker
-	}
-
-	nowMS := toMillisecond(time.Now())
-	tracker := event.tracker[name]
-	tracker.Start(nowMS)
-
-	if event.producesHistory() {
-		event.eventHistory.elapsedMS("s-"+name, nowMS)
-	}
+// Get end time of current event data.
+func (event *eventZap) GetEndTime() time.Time {
+	return event.endTime
 }
 
-func (event *eventZap) EndTimer(name string) {
-	if !event.inProgress() || len(name) < 1 {
-		return
-	}
+// ************* Payload *************
 
-	tracker, contains := event.tracker[name]
-
-	if !contains {
-		return
-	}
-
-	nowMs := toMillisecond(time.Now())
-	tracker.End(nowMs)
-
-	if event.producesHistory() {
-		event.eventHistory.elapsedMS("e-"+name, nowMs)
-	}
+// Add payload as zap.Field.
+// Payload could be anything with RPC requests or user event such as http request param.
+func (event *eventZap) AddPayloads(fields ...zap.Field) {
+	event.payloads = append(event.payloads, fields...)
 }
 
-func (event *eventZap) UpdateTimer(name string, elapsedMS int64) {
-	event.UpdateTimerWithSample(name, elapsedMS, 1)
+// List payloads.
+func (event *eventZap) ListPayloads() []zap.Field {
+	return event.payloads
 }
 
-func (event *eventZap) UpdateTimerWithSample(name string, elapsedMS, sample int64) {
-	if !event.inProgress() || len(name) < 1 {
-		return
-	}
+// ************* Identity *************
 
-	_, contains := event.tracker[name]
-
-	if !contains {
-		tracker := newTimeTracker(name)
-
-		if tracker == nil {
-			return
-		}
-
-		event.tracker[name] = tracker
-	}
-
-	tracker := event.tracker[name]
-	tracker.ElapseWithSample(elapsedMS, sample)
+// Get event id of current event.
+func (event *eventZap) GetEventId() string {
+	return event.eventId
 }
 
-func (event *eventZap) GetTimeElapsedMS(name string) int64 {
-	timer, contains := event.tracker[name]
-	if !contains {
-		return -1
-	}
-
-	return timer.GetElapsedMS()
+// Set event id of current event.
+// A new event id would be created while event data was created from EventFactory.
+// User could override event id with this function.
+func (event *eventZap) SetEventId(id string) {
+	event.eventId = id
 }
 
-func (event *eventZap) GetRemoteAddr() string {
-	return event.remoteAddr
+// Get trace id of current event.
+func (event *eventZap) GetTraceId() string {
+	return event.traceId
 }
 
-func (event *eventZap) SetRemoteAddr(addr string) {
-	event.remoteAddr = addr
+// Set trace id of current event.
+func (event *eventZap) SetTraceId(id string) {
+	event.traceId = id
 }
 
-func (event *eventZap) GetCounter(key string) int64 {
-	val, ok := event.counters.Fields[key]
-
-	if ok {
-		return cast.ToInt64(val)
-	} else {
-		return -1
-	}
+// Get request id of current event.
+func (event *eventZap) GetRequestId() string {
+	return event.requestId
 }
 
-func (event *eventZap) SetCounter(key string, value int64) {
-	event.counters.AddInt64(key, value)
+// Set request id of current event.
+func (event *eventZap) SetRequestId(id string) {
+	event.requestId = id
 }
 
-func (event *eventZap) InCCounter(key string, delta int64) {
-	val, ok := event.counters.Fields[key]
+// ************* Error *************
 
-	if ok {
-		event.counters.AddInt64(key, cast.ToInt64(val)+delta)
-	} else {
-		event.counters.AddInt64(key, delta)
-	}
-}
-
-func (event *eventZap) AddPair(key, value string) {
-	event.pairs.AddString(key, value)
-}
-
+// Add an error into event which could be printed with error.Error() function.
 func (event *eventZap) AddErr(err error) {
 	if err == nil {
 		return
@@ -315,6 +192,8 @@ func (event *eventZap) AddErr(err error) {
 	}
 }
 
+// Get error count.
+// We will use value of error.Error() as the key.
 func (event *eventZap) GetErrCount(err error) int64 {
 	name := err.Error()
 
@@ -330,23 +209,175 @@ func (event *eventZap) GetErrCount(err error) int64 {
 	return 0
 }
 
-func (event *eventZap) AddFields(fields ...zap.Field) {
-	event.fields = append(event.fields, fields...)
+// ************* Event *************
+
+// Get operation of current event.
+func (event *eventZap) GetOperation() string {
+	return event.operation
 }
 
-func (event *eventZap) GetFields() []zap.Field {
-	return event.fields
+// Set operation of current event.
+func (event *eventZap) SetOperation(operation string) {
+	event.operation = operation
 }
 
-func (event *eventZap) RecordHistoryEvent(name string) {
-	if event.producesHistory() {
-		event.eventHistory.elapsedMS(name, toMillisecond(time.Now()))
+// Get remote address of current event.
+func (event *eventZap) GetRemoteAddr() string {
+	return event.remoteAddr
+}
+
+// Set remote address of current event, mainly used in RPC calls.
+// Default value of <localhost> would be assigned while creating event via EventFactory.
+func (event *eventZap) SetRemoteAddr(addr string) {
+	event.remoteAddr = addr
+}
+
+// Get response code of current event.
+// Mainly used in RPC calls.
+func (event *eventZap) GetResCode() string {
+	return event.resCode
+}
+
+// Set response code of current event.
+func (event *eventZap) SetResCode(resCode string) {
+	event.resCode = resCode
+}
+
+// Get event status of current event.
+// Available event status as bellow:
+// 1: NotStarted
+// 2: InProgress
+// 3: Ended
+func (event *eventZap) GetEventStatus() eventStatus {
+	return event.status
+}
+
+// Start timer of current sub event.
+func (event *eventZap) StartTimer(name string) {
+	if !event.inProgress() || len(name) < 1 {
+		return
+	}
+
+	_, contains := event.tracker[name]
+
+	if !contains {
+		tracker := newTimeTracker(name)
+		if tracker == nil {
+			return
+		}
+
+		event.tracker[name] = tracker
+	}
+
+	nowMs := toMillisecond(time.Now())
+	tracker := event.tracker[name]
+	tracker.Start(nowMs)
+}
+
+// End timer of current sub event.
+func (event *eventZap) EndTimer(name string) {
+	if !event.inProgress() || len(name) < 1 {
+		return
+	}
+
+	tracker, contains := event.tracker[name]
+
+	if !contains {
+		return
+	}
+
+	nowMs := toMillisecond(time.Now())
+	tracker.End(nowMs)
+}
+
+// Update timer of current sub event with time elapsed in milli seconds.
+func (event *eventZap) UpdateTimerMs(name string, elapsedMs int64) {
+	event.UpdateTimerMsWithSample(name, elapsedMs, 1)
+}
+
+// Update timer of current sub event with time elapsed in milli seconds and sample.
+func (event *eventZap) UpdateTimerMsWithSample(name string, elapsedMs, sample int64) {
+	if !event.inProgress() || len(name) < 1 {
+		return
+	}
+
+	_, contains := event.tracker[name]
+
+	if !contains {
+		tracker := newTimeTracker(name)
+
+		if tracker == nil {
+			return
+		}
+
+		event.tracker[name] = tracker
+	}
+
+	tracker := event.tracker[name]
+	tracker.ElapseWithSample(elapsedMs, sample)
+}
+
+// Get timer elapsed in milli seconds.
+func (event *eventZap) GetTimeElapsedMs(name string) int64 {
+	timer, contains := event.tracker[name]
+	if !contains {
+		return -1
+	}
+
+	return timer.GetElapsedMs()
+}
+
+// Get value with key in pairs.
+func (event *eventZap) GetValueFromPair(key string) string {
+	val, ok := event.pairs.Fields[key]
+	str := cast.ToString(val)
+
+	if ok && len(str) > 0 {
+		return str
+	} else {
+		return ""
 	}
 }
 
-func (event *eventZap) WriteLog() {
+// Add value with key in pairs.
+func (event *eventZap) AddPair(key, value string) {
+	event.pairs.AddString(key, value)
+}
+
+// Get counter of current event.
+func (event *eventZap) GetCounter(key string) int64 {
+	val, ok := event.counters.Fields[key]
+
+	if ok {
+		return cast.ToInt64(val)
+	} else {
+		return -1
+	}
+}
+
+// Set counter of current event.
+func (event *eventZap) SetCounter(key string, value int64) {
+	event.counters.AddInt64(key, value)
+}
+
+// Increase counter of current event.
+func (event *eventZap) IncCounter(key string, delta int64) {
+	val, ok := event.counters.Fields[key]
+
+	if ok {
+		event.counters.AddInt64(key, cast.ToInt64(val)+delta)
+	} else {
+		event.counters.AddInt64(key, delta)
+	}
+}
+
+// Set event status and flush to logger.
+func (event *eventZap) Finish() {
+	if event.quietMode {
+		return
+	}
 	if event.format == JSON {
-		event.GetLogger().With(event.toJsonFormat()...).Info("")
+		event.logger.With(event.toJsonFormat()...).Info("")
 	} else {
 		event.logger.Info(event.toRkFormat())
 	}
@@ -357,158 +388,259 @@ func (event *eventZap) WriteLog() {
 	}
 }
 
+// ************* Internal *************
+
+// Marshal to RK format.
 func (event *eventZap) toRkFormat() string {
 	builder := &bytes.Buffer{}
 
 	builder.WriteString(scopeDelimiter + "\n")
 
-	// end_time
+	// We would expect bellow format of event data as RK format.
+	// ------------------------------------------------------------------------
+	// endTime=2021-06-13T00:24:20.256315+08:00
+	// startTime=2021-06-13T00:24:19.251056+08:00
+	// elapsedNano=1005258286
+	// timezone=CST
+	// ids={"eventId":"6a2f84a8-a09a-42dc-bc9e-cabc7977345d"}
+	// app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
+	// env={"arch":"amd64","hostname":"lark.local","locale":"rk::ap-guangzhou::ap-guangzhou-1::beta","os":"darwin"}
+	// payloads={"f1":"f2","t2":"2021-06-13T00:24:20.256276+08:00"}
+	// error={"my error":1}
+	// counters={"count":1}
+	// pairs={"key":"value"}
+	// timing={"t1.count":1,"t1.elapsed_ms":1005}
+	// remoteAddr=localhost
+	// operation=op
+	// resCode=200
+	// eventStatus=Ended
+	// EOE
+
+	// ************* Time *************
+	// endTime
 	if event.GetEndTime().IsZero() {
 		event.SetEndTime(time.Now())
 	}
 	builder.WriteString(fmt.Sprintf("%s=%s\n", endTimeKey, event.GetEndTime().Format(time.RFC3339Nano)))
-	// start_time
+	// startTime
 	if event.GetStartTime().IsZero() {
 		event.SetStartTime(time.Now())
 	}
 	builder.WriteString(fmt.Sprintf("%s=%s\n", startTimeKey, event.GetStartTime().Format(time.RFC3339Nano)))
-	// time
+	// elapsedNano
 	builder.WriteString(fmt.Sprintf("%s=%d\n", elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()))
-	// hostname
-	builder.WriteString(fmt.Sprintf("%s=%s\n", hostnameKey, event.GetHostname()))
-	// eventId
-	if len(event.GetEventId()) > 0 {
-		builder.WriteString(fmt.Sprintf("%s=%s\n", eventIdKey, event.GetEventId()))
-	}
-	// timing
-	builder.WriteString(fmt.Sprintf("%s=%s\n", timingKey, event.marshalTiming()))
-	// counters
-	builder.WriteString(fmt.Sprintf("%s=%s\n", counterKey, event.marshalEncoder(event.counters)))
-	// pairs
-	builder.WriteString(fmt.Sprintf("%s=%s\n", pairKey, event.marshalEncoder(event.pairs)))
-	// errors
+	// timeZone
+	builder.WriteString(fmt.Sprintf("%s=%s\n", timezoneKey, event.timeZone))
+
+	// ************* Ids *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", idsKey, event.marshalIds()))
+
+	// ************* App *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", appKey, event.marshalApp()))
+
+	// ************* Env *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", envKey, event.marshalEnv()))
+
+	// ************* Payloads *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", payloadsKey, event.marshalPayloads()))
+
+	// ************* Error *************
 	builder.WriteString(fmt.Sprintf("%s=%s\n", errKey, event.marshalEncoder(event.errors)))
-	// fields
-	enc := zapcore.NewMapObjectEncoder()
-	for i := range event.fields {
-		event.fields[i].AddTo(enc)
-	}
-	bytes, _ := json.Marshal(enc.Fields)
-	builder.WriteString(fmt.Sprintf("%s=%s\n", fieldKey, string(bytes)))
+
+	// ************* Counter *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", countersKey, event.marshalEncoder(event.counters)))
+
+	// ************* Pairs *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", pairsKey, event.marshalEncoder(event.pairs)))
+
+	// ************* Timing *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", timingKey, event.marshalTiming()))
+
+	// ************* Event *************
 	// remote address
 	builder.WriteString(fmt.Sprintf("%s=%s\n", remoteAddrKey, event.GetRemoteAddr()))
-
-	// app name
-	builder.WriteString(fmt.Sprintf("%s=%s\n", appNameKey, event.GetAppName()))
-	// app version
-	builder.WriteString(fmt.Sprintf("%s=%s\n", appVersionKey, event.GetAppVersion()))
-	// entry name
-	if len(event.GetEntryName()) > 0 {
-		builder.WriteString(fmt.Sprintf("%s=%s\n", entryNameKey, event.GetEntryName()))
-	}
-	// entry type
-	if len(event.GetEntryType()) > 0 {
-		builder.WriteString(fmt.Sprintf("%s=%s\n", entryTypeKey, event.GetEntryType()))
-	}
-	// locale
-	builder.WriteString(fmt.Sprintf("%s=%s\n", localeKey, event.GetLocale()))
-
 	// operation
 	builder.WriteString(fmt.Sprintf("%s=%s\n", operationKey, event.GetOperation()))
-	// status
-	builder.WriteString(fmt.Sprintf("%s=%s\n", eventStatusKey, event.GetEventStatus().String()))
 	// resCode
 	if len(event.resCode) > 0 {
 		builder.WriteString(fmt.Sprintf("%s=%s\n", resCodeKey, event.resCode))
 	}
-	// history
-	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
-		builder.WriteString(historyKey + "=")
-		event.getEventHistory().appendTo(builder)
-		builder.WriteString("\n")
-	}
-
-	// record timezone, os and arch
-	zone, _ := time.Now().Zone()
-	builder.WriteString(fmt.Sprintf("%s=%s\n", timezoneKey, zone))
-	builder.WriteString(fmt.Sprintf("%s=%s\n", osKey, runtime.GOOS))
-	builder.WriteString(fmt.Sprintf("%s=%s\n", archKey, runtime.GOARCH))
+	// status
+	builder.WriteString(fmt.Sprintf("%s=%s\n", eventStatusKey, event.GetEventStatus().String()))
 
 	builder.WriteString(eoe)
 	return builder.String()
 }
 
+// Marshal to JSON format.
 func (event *eventZap) toJsonFormat() []zap.Field {
 	fields := make([]zapcore.Field, 0)
 
-	// end_time
+	// We would expect bellow format of event data as JSON format.
+	//{
+	//	"endTime":"2021-06-13T00:24:21.261+0800",
+	//	"startTime":"2021-06-13T00:24:20.257+0800",
+	//	"elapsedNano":1004326112,
+	//	"timezone":"CST",
+	//	"ids":{
+	//	    "eventId":"72a59682-230f-4ba2-a9fc-e99a031e4d8c",
+	//		"requestId":"",
+	//		"traceId":""
+	//  },
+	//	"app":{
+	//	    "appName":"appName",
+	//		"appVersion":"unknown",
+	//		"entryName":"unknown",
+	//		"entryType":"unknown"
+	//  },
+	//	"env":{
+	//	    "arch":"amd64",
+	//		"hostname":"lark.local",
+	//		"locale":"*::*::*::*",
+	//		"os":"darwin"
+	//  },
+	//	"payloads":{
+	//	    "f1":"f2",
+	//		"t2":"2021-06-13T00:24:21.261768+08:00"
+	//  },
+	//	"error":{
+	//	    "my error":1
+	//  },
+	//	"counters":{
+	//	    "count":1
+	//  },
+	//	"pairs":{
+	//	    "key":"value"
+	//  },
+	//	"timing":{
+	//	    "t1.count":1,
+	//		"t1.elapsed_ms":1004
+	//  },
+	//	"remoteAddr":"localhost",
+	//	"operation":"op",
+	//	"eventStatus":"Ended",
+	//	"resCode":"200"
+	//}
+
+	// endTime
 	if event.GetEndTime().IsZero() {
 		event.SetEndTime(time.Now())
 	}
-	fields = append(fields, zap.Time(endTimeKey, event.GetEndTime()))
-	// start_time
+	// startTime
 	if event.GetStartTime().IsZero() {
 		event.SetStartTime(time.Now())
 	}
-
 	fields = append(fields,
+		zap.Time(endTimeKey, event.GetEndTime()),
 		zap.Time(startTimeKey, event.GetStartTime()),
 		zap.Int64(elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()),
-		zap.String(hostnameKey, event.GetHostname()),
-		event.marshalTimerField(),
-		zap.Any(counterKey, event.counters.Fields),
-		zap.Any(pairKey, event.pairs.Fields),
+		zap.String(timezoneKey, event.timeZone),
+		zap.Any(idsKey, event.idsToMapObjectEncoder().Fields),
+		zap.Any(appKey, event.appToMapObjectEncoder().Fields),
+		zap.Any(envKey, event.envToMapObjectEncoder().Fields),
+		zap.Any(payloadsKey, event.payloadsToMapObjectEncoder().Fields),
 		zap.Any(errKey, event.errors.Fields),
+		zap.Any(countersKey, event.counters.Fields),
+		zap.Any(pairsKey, event.pairs.Fields),
+		zap.Any(timingKey, event.timingToMapObjectEncoder().Fields),
 		zap.String(remoteAddrKey, event.GetRemoteAddr()),
-		zap.String(appNameKey, event.GetAppName()),
-		zap.String(appVersionKey, event.GetAppVersion()),
-		zap.String(localeKey, event.GetLocale()),
 		zap.String(operationKey, event.GetOperation()),
 		zap.String(eventStatusKey, event.GetEventStatus().String()))
 
-	// eventId
-	if len(event.eventId) > 1 {
-		fields = append(fields, zap.String(eventIdKey, event.GetEventId()))
-	}
 	// resCode
 	if len(event.resCode) > 0 {
 		fields = append(fields, zap.String(resCodeKey, event.resCode))
 	}
 
-	// fields
-	enc := zapcore.NewMapObjectEncoder()
-	for _, v := range event.fields {
-		v.AddTo(enc)
-	}
-	fields = append(fields, zap.Any(fieldKey, enc.Fields))
-
-	// entry name
-	if len(event.GetEntryType()) > 0 {
-		fields = append(fields, zap.String(entryNameKey, event.GetEntryName()))
-	}
-
-	// entry type
-	if len(event.GetEntryType()) > 0 {
-		fields = append(fields, zap.String(entryTypeKey, event.GetEntryType()))
-	}
-
-	// history
-	if event.producesHistory() && event.getEventHistory().builder.Len() > 0 {
-		builder := &bytes.Buffer{}
-		event.getEventHistory().appendTo(builder)
-		fields = append(fields, zap.String(historyKey, builder.String()))
-	}
-
-	// record timezone, os and arch
-	zone, _ := time.Now().Zone()
-	fields = append(fields,
-		zap.String(timezoneKey, zone),
-		zap.String(osKey, runtime.GOOS),
-		zap.String(archKey, runtime.GOARCH))
-
 	return fields
 }
 
+// Construct payloads to zapcore.MapObjectEncoder
+func (event *eventZap) payloadsToMapObjectEncoder() *zapcore.MapObjectEncoder {
+	enc := zapcore.NewMapObjectEncoder()
+	for i := range event.payloads {
+		event.payloads[i].AddTo(enc)
+	}
+
+	return enc
+}
+
+// Marshal payloads.
+func (event *eventZap) marshalPayloads() string {
+	return event.marshalEncoder(event.payloadsToMapObjectEncoder())
+}
+
+// Construct env to zapcore.MapObjectEncoder
+func (event *eventZap) envToMapObjectEncoder() *zapcore.MapObjectEncoder {
+	enc := zapcore.NewMapObjectEncoder()
+	enc.AddString(hostnameKey, event.hostname)
+	enc.AddString(localeKey, event.locale)
+	enc.AddString(goosKey, goos)
+	enc.AddString(goArchKey, goArch)
+
+	return enc
+}
+
+// Marshal env.
+func (event *eventZap) marshalEnv() string {
+	return event.marshalEncoder(event.envToMapObjectEncoder())
+}
+
+// Construct ids to zapcore.MapObjectEncoder
+func (event *eventZap) idsToMapObjectEncoder() *zapcore.MapObjectEncoder {
+	enc := zapcore.NewMapObjectEncoder()
+	if len(event.eventId) > 0 {
+		enc.AddString(eventIdKey, event.eventId)
+	}
+
+	if len(event.traceId) > 0 {
+		enc.AddString(traceIdKey, event.traceId)
+	}
+
+	if len(event.requestId) > 0 {
+		enc.AddString(requestIdKey, event.requestId)
+	}
+
+	return enc
+}
+
+// Marshal ids.
+func (event *eventZap) marshalIds() string {
+	return event.marshalEncoder(event.idsToMapObjectEncoder())
+}
+
+// Construct app to zapcore.MapObjectEncoder
+func (event *eventZap) appToMapObjectEncoder() *zapcore.MapObjectEncoder {
+	enc := zapcore.NewMapObjectEncoder()
+	enc.AddString(appNameKey, event.appName)
+	enc.AddString(appVersionKey, event.appVersion)
+	enc.AddString(entryNameKey, event.entryName)
+	enc.AddString(entryTypeKey, event.entryType)
+
+	return enc
+}
+
+// Marshal app.
+func (event *eventZap) marshalApp() string {
+	return event.marshalEncoder(event.appToMapObjectEncoder())
+}
+
+// Construct timing to zapcore.MapObjectEncoder
+func (event *eventZap) timingToMapObjectEncoder() *zapcore.MapObjectEncoder {
+	enc := zapcore.NewMapObjectEncoder()
+	for _, v := range event.tracker {
+		v.ToZapFields(enc)
+	}
+
+	return enc
+}
+
+// Marshal timing.
+func (event *eventZap) marshalTiming() string {
+	return event.marshalEncoder(event.timingToMapObjectEncoder())
+}
+
+// Marshal zapcore.MapObjectEncoder.
 func (event *eventZap) marshalEncoder(enc *zapcore.MapObjectEncoder) string {
 	builder := &bytes.Buffer{}
 
@@ -525,86 +657,16 @@ func (event *eventZap) marshalEncoder(enc *zapcore.MapObjectEncoder) string {
 	return builder.String()
 }
 
-func (event *eventZap) marshalTiming() string {
-	builder := &bytes.Buffer{}
-	enc := zapcore.NewMapObjectEncoder()
-
-	for _, v := range event.tracker {
-		v.ToZapFields(enc)
-	}
-
-	// all fields are int64
-	bytes, err := json.Marshal(enc.Fields)
-	if err != nil {
-		builder.WriteString("{}")
-	} else {
-		builder.Write(bytes)
-	}
-
-	return builder.String()
-}
-
-func (event *eventZap) marshalTimerField() zap.Field {
-	enc := zapcore.NewMapObjectEncoder()
-	for _, v := range event.tracker {
-		v.ToZapFields(enc)
-	}
-
-	return zap.Any(timingKey, enc.Fields)
-}
-
-func (event *eventZap) getEventHistory() *eventHistory {
-	return event.eventHistory
-}
-
-func (event *eventZap) producesHistory() bool {
-	return !event.quietMode
-}
-
+// Is Event in progress?
 func (event *eventZap) inProgress() bool {
-	if event.status != inProgress {
+	if event.status != InProgress {
 		return false
 	}
 
 	return true
 }
 
-func (event *eventZap) setLogger(logger *zap.Logger) {
-	event.logger = logger
-}
-
-func (event *eventZap) setFormat(format format) {
-	event.format = format
-}
-
-func (event *eventZap) setQuietMode(quietMode bool) {
-	event.quietMode = quietMode
-}
-
-func (event *eventZap) setEntryName(entryName string) {
-	event.entryName = entryName
-}
-
-func (event *eventZap) setEntryType(entryType string) {
-	event.entryType = entryType
-}
-
-func (event *eventZap) setAppName(appName string) {
-	event.appName = appName
-}
-
-func (event *eventZap) setAppVersion(appVersion string) {
-	event.appVersion = appVersion
-}
-
-func (event *eventZap) setLocale(locale string) {
-	event.locale = locale
-}
-
-func (event *eventZap) setHostname(hostname string) {
-	event.hostname = hostname
-}
-
+// Convert time.Time to milliseconds.
 func toMillisecond(curr time.Time) int64 {
 	return curr.UnixNano() / 1e6
 }

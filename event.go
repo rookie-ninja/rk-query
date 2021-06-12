@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkquery
 
 import (
@@ -6,91 +10,121 @@ import (
 )
 
 type Event interface {
-	GetValue(string) string
+	// ************* Time *************
 
-	GetAppName() string
-
-	GetAppVersion() string
-
-	GetEntryName() string
-
-	GetEntryType() string
-
-	GetLocale() string
-
-	GetEventId() string
-
-	SetEventId(string)
-
-	GetHostname() string
-
-	GetLogger() *zap.Logger
-
-	GetOperation() string
-
-	SetOperation(string)
-
-	GetEventStatus() eventStatus
-
+	// Set start timer of current event. This can be overridden by user.
+	// We keep this function open in order to mock event during unit test.
 	SetStartTime(time.Time)
 
+	// Get start time of current event data.
 	GetStartTime() time.Time
 
-	GetEndTime() time.Time
-
+	// Set end timer of current event. This can be overridden by user.
+	// We keep this function open in order to mock event during unit test.
 	SetEndTime(time.Time)
 
-	StartTimer(string)
+	// Get end time of current event data.
+	GetEndTime() time.Time
 
-	EndTimer(string)
+	// ************* Payload *************
 
-	UpdateTimer(string, int64)
+	// Add payload as zap.Field.
+	// Payload could be anything with RPC requests or user event such as http request param.
+	AddPayloads(...zap.Field)
 
-	UpdateTimerWithSample(string, int64, int64)
+	// List payloads.
+	ListPayloads() []zap.Field
 
-	GetTimeElapsedMS(string) int64
+	// ************* Identity *************
 
-	GetRemoteAddr() string
+	// Get event id of current event.
+	GetEventId() string
 
-	SetRemoteAddr(string)
+	// Set event id of current event.
+	// A new event id would be created while event data was created from EventFactory.
+	// User could override event id with this function.
+	SetEventId(string)
 
-	GetCounter(string) int64
+	// Get trace id of current event.
+	GetTraceId() string
 
-	SetCounter(string, int64)
+	// Set trace id of current event.
+	SetTraceId(string)
 
-	InCCounter(string, int64)
+	// Get request id of current event.
+	GetRequestId() string
 
-	AddPair(string, string)
+	// Set request id of current event.
+	SetRequestId(string)
 
+	// ************* Error *************
+
+	// Add an error into event which could be printed with error.Error() function.
 	AddErr(error)
 
-	SetResCode(string)
-
+	// Get error count.
+	// We will use value of error.Error() as the key.
 	GetErrCount(error) int64
 
-	AddFields(...zap.Field)
+	// ************* Event *************
 
-	GetFields() []zap.Field
+	// Get operation of current event.
+	GetOperation() string
 
-	RecordHistoryEvent(string)
+	// Set operation of current event.
+	SetOperation(string)
 
-	WriteLog()
+	// Get remote address of current event.
+	GetRemoteAddr() string
 
-	setLogger(*zap.Logger)
+	// Set remote address of current event, mainly used in RPC calls.
+	// Default value of <localhost> would be assigned while creating event via EventFactory.
+	SetRemoteAddr(string)
 
-	setFormat(format)
+	// Get response code of current event.
+	// Mainly used in RPC calls.
+	GetResCode() string
 
-	setQuietMode(bool)
+	// Set response code of current event.
+	SetResCode(string)
 
-	setAppName(string)
+	// Get event status of current event.
+	// Available event status as bellow:
+	// 1: NotStarted
+	// 2: InProgress
+	// 3: Ended
+	GetEventStatus() eventStatus
 
-	setAppVersion(string)
+	// Start timer of current sub event.
+	StartTimer(string)
 
-	setEntryName(string)
+	// End timer of current sub event.
+	EndTimer(string)
 
-	setEntryType(string)
+	// Update timer of current sub event with time elapsed in milli seconds.
+	UpdateTimerMs(string, int64)
 
-	setLocale(string)
+	// Update timer of current sub event with time elapsed in milli seconds and sample.
+	UpdateTimerMsWithSample(string, int64, int64)
 
-	setHostname(string)
+	// Get timer elapsed in milli seconds.
+	GetTimeElapsedMs(string) int64
+
+	// Get value with key in pairs.
+	GetValueFromPair(string) string
+
+	// Add value with key in pairs.
+	AddPair(string, string)
+
+	// Get counter of current event.
+	GetCounter(string) int64
+
+	// Set counter of current event.
+	SetCounter(string, int64)
+
+	// Increase counter of current event.
+	IncCounter(string, int64)
+
+	// Set event status and flush to logger.
+	Finish()
 }

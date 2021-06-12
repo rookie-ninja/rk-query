@@ -15,7 +15,7 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
-`go get -u rookie-ninja/rk-query`
+`go get -u github.com/rookie-ninja/rk-query`
 
 ## Quick Start
 Zap logger needs to be pass to query in order to write logs
@@ -83,20 +83,22 @@ func withEventRkFormat() {
 Output
 ```
 ------------------------------------------------------------------------
-endTime=2020-07-30T03:42:22.393874+08:00
-startTime=2020-07-30T03:42:21.390642+08:00
-elapsedNano=1004000000
-hostname=MYLOCAL
-timing={"t1.count":1,"t1.elapsed_ms":1003}
-counter={"count":1}
-pair={"key":"value"}
-error={"MyError":1}
-field={"f1":"f2","t2":"2020-07-30T03:42:22.393857+08:00"}
-remoteAddr=Unknown
-appName=appName
-operation=Unknown
+endTime=2021-06-13T01:16:27.58556+08:00
+startTime=2021-06-13T01:16:26.581691+08:00
+elapsedNano=1003868481
+timezone=CST
+ids={"eventId":"581812ae-924a-44b2-83f8-fa8eef071393"}
+app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
+env={"arch":"amd64","hostname":"lark.local","locale":"rk::ap-guangzhou::ap-guangzhou-1::beta","os":"darwin"}
+payloads={"f1":"f2","t2":"2021-06-13T01:16:27.58554+08:00"}
+error={"my error":1}
+counters={"count":1}
+pairs={"key":"value"}
+timing={"t1.count":1,"t1.elapsedMs":1004}
+remoteAddr=localhost
+operation=op
+resCode=200
 eventStatus=Ended
-history=s-t1:1596051741390,e-t1:1003,end:0
 EOE
 ```
 
@@ -162,32 +164,48 @@ Output
 We formatted JSON output bellow, actual logs would not be a pretty formatted JSON
 ```
 {
-    "endTime":"2020-07-30T03:42:23.398+0800",
-    "startTime":"2020-07-30T03:42:22.394+0800",
-    "elapsedNano":1004000000,
-    "hostname":"MYLOCAL",
+    "endTime":"2021-06-13T00:24:21.261+0800",
+    "startTime":"2021-06-13T00:24:20.257+0800",
+    "elapsedNano":1004326112,
+    "timezone":"CST",
+    "ids":{
+        "eventId":"72a59682-230f-4ba2-a9fc-e99a031e4d8c",
+        "requestId":"",
+        "traceId":""
+    },
+    "app":{
+        "appName":"appName",
+        "appVersion":"unknown",
+        "entryName":"unknown",
+        "entryType":"unknown"
+    },
+    "env":{
+        "arch":"amd64",
+        "hostname":"lark.local",
+        "locale":"*::*::*::*",
+        "os":"darwin"
+    },
+    "payloads":{
+        "f1":"f2",
+        "t2":"2021-06-13T00:24:21.261768+08:00"
+    },
+    "error":{
+        "my error":1
+    },
+    "counters":{
+        "count":1
+    },
+    "pairs":{
+        "key":"value"
+    },
     "timing":{
         "t1.count":1,
         "t1.elapsed_ms":1004
     },
-    "counter":{
-        "count":1
-    },
-    "pair":{
-        "key":"value"
-    },
-    "error":{
-        "MyError":1
-    },
-    "field":{
-        "f1":"f2",
-        "t2":"2020-07-30T03:42:23.398282+08:00"
-    },
-    "remoteAddr":"Unknown",
-    "appName":"appName",
+    "remoteAddr":"localhost",
     "operation":"op",
     "eventStatus":"Ended",
-    "history":"s-t1:1596051742394,e-t1:1004,end:0"
+    "resCode":"200"
 }
 ```
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -24,5 +24,5 @@ func TestEventFactory_CreateEvent_WithAppName(t *testing.T) {
 	fac := NewEventFactory()
 	event := fac.CreateEvent(WithAppName("app"))
 	assert.NotNil(t, event)
-	assert.Equal(t, "app", event.GetAppName())
+	assert.Equal(t, "app", event.(*eventZap).appName)
 }

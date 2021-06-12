@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -18,9 +18,9 @@ func TestNewTimeTrackerHappyCase(t *testing.T) {
 	assert.NotNil(t, tracker)
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -34,9 +34,9 @@ func TestStartWithNegativeNowMS(t *testing.T) {
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -46,10 +46,10 @@ func TestStartWithZeroIndexCurr(t *testing.T) {
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(1), tracker.indexCurr)
-	assert.Equal(t, int64(1), tracker.lastTimestampMS)
+	assert.Equal(t, int64(1), tracker.lastTimestampMs)
 	assert.Equal(t, int64(1), tracker.countTotal)
 	// we don't track elapsed time in Start()
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -62,10 +62,10 @@ func TestStartWithTwoIndexCurr(t *testing.T) {
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(2), tracker.indexCurr)
-	assert.Equal(t, int64(2), tracker.lastTimestampMS)
+	assert.Equal(t, int64(2), tracker.lastTimestampMs)
 	assert.Equal(t, int64(2), tracker.countTotal)
 	// we track elapsed time in Start() if called multiple times
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(1), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -79,10 +79,10 @@ func TestStartWithThreeIndexCurr(t *testing.T) {
 	// tracker should do nothing about negative value
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(3), tracker.indexCurr)
-	assert.Equal(t, int64(3), tracker.lastTimestampMS)
+	assert.Equal(t, int64(3), tracker.lastTimestampMs)
 	assert.Equal(t, int64(3), tracker.countTotal)
 	// we don't track elapsed time in Start()
-	assert.Equal(t, int64(3), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(3), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -92,9 +92,9 @@ func TestEndWithoutStart(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -104,9 +104,9 @@ func TestEndWithNegativeNowMS(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -117,9 +117,9 @@ func TestEndOneStart(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(2), tracker.lastTimestampMS)
+	assert.Equal(t, int64(2), tracker.lastTimestampMs)
 	assert.Equal(t, int64(1), tracker.countTotal)
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(1), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -133,9 +133,9 @@ func TestEndTwoStart(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(4), tracker.lastTimestampMS)
+	assert.Equal(t, int64(4), tracker.lastTimestampMs)
 	assert.Equal(t, int64(2), tracker.countTotal)
-	assert.Equal(t, int64(2), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(2), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -148,9 +148,9 @@ func TestEndWithIncompleteEnd(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(1), tracker.indexCurr)
-	assert.Equal(t, int64(3), tracker.lastTimestampMS)
+	assert.Equal(t, int64(3), tracker.lastTimestampMs)
 	assert.Equal(t, int64(2), tracker.countTotal)
-	assert.Equal(t, int64(3), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(3), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -160,9 +160,9 @@ func TestElapseWithNegativeParam(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -172,9 +172,9 @@ func TestElapseHappyCase(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(1), tracker.countTotal)
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(1), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -184,9 +184,9 @@ func TestElapseWithSampleWithNegativeTime(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -196,9 +196,9 @@ func TestElapseWithSampleWithNegativeSample(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(0), tracker.countTotal)
-	assert.Equal(t, int64(0), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(0), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -208,9 +208,9 @@ func TestElapseWithSampleHappyCase(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(0), tracker.lastTimestampMS)
+	assert.Equal(t, int64(0), tracker.lastTimestampMs)
 	assert.Equal(t, int64(1), tracker.countTotal)
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(1), tracker.elapsedTotalMs)
 	assert.False(t, tracker.isFinished)
 }
 
@@ -223,9 +223,9 @@ func TestFinishHappyCase(t *testing.T) {
 
 	assert.Equal(t, "fake", tracker.name)
 	assert.Equal(t, int64(0), tracker.indexCurr)
-	assert.Equal(t, int64(2), tracker.lastTimestampMS)
+	assert.Equal(t, int64(2), tracker.lastTimestampMs)
 	assert.Equal(t, int64(1), tracker.countTotal)
-	assert.Equal(t, int64(1), tracker.elapsedTotalMS)
+	assert.Equal(t, int64(1), tracker.elapsedTotalMs)
 	assert.True(t, tracker.isFinished)
 }
 

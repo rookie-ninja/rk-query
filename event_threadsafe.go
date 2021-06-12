@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkquery
 
 import (
@@ -7,101 +11,14 @@ import (
 )
 
 type eventThreadSafe struct {
-	delegate Event
+	delegate *eventZap
 	lock     *sync.Mutex
 }
 
-func (event *eventThreadSafe) GetValue(key string) string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
+// ************* Time *************
 
-	return event.delegate.GetValue(key)
-}
-
-func (event *eventThreadSafe) GetEntryName() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetEntryName()
-}
-
-func (event *eventThreadSafe) GetEntryType() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetEntryType()
-}
-
-func (event *eventThreadSafe) GetAppName() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetAppName()
-}
-
-func (event *eventThreadSafe) GetAppVersion() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetAppVersion()
-}
-
-func (event *eventThreadSafe) GetLocale() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetLocale()
-}
-
-func (event *eventThreadSafe) GetEventId() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetEventId()
-}
-
-func (event *eventThreadSafe) SetEventId(id string) {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	event.delegate.SetEventId(id)
-}
-
-func (event *eventThreadSafe) GetHostname() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetHostname()
-}
-
-func (event *eventThreadSafe) GetLogger() *zap.Logger {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetLogger()
-}
-
-func (event *eventThreadSafe) GetOperation() string {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetOperation()
-}
-
-func (event *eventThreadSafe) SetOperation(operation string) {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	event.delegate.SetOperation(operation)
-}
-
-func (event *eventThreadSafe) GetEventStatus() eventStatus {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetEventStatus()
-}
-
+// Set start timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
 func (event *eventThreadSafe) SetStartTime(curr time.Time) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -109,6 +26,7 @@ func (event *eventThreadSafe) SetStartTime(curr time.Time) {
 	event.delegate.SetStartTime(curr)
 }
 
+// Get start time of current event data.
 func (event *eventThreadSafe) GetStartTime() time.Time {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -116,13 +34,8 @@ func (event *eventThreadSafe) GetStartTime() time.Time {
 	return event.delegate.GetStartTime()
 }
 
-func (event *eventThreadSafe) GetEndTime() time.Time {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	return event.delegate.GetEndTime()
-}
-
+// Set end timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
 func (event *eventThreadSafe) SetEndTime(curr time.Time) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -130,83 +43,88 @@ func (event *eventThreadSafe) SetEndTime(curr time.Time) {
 	event.delegate.SetEndTime(curr)
 }
 
-func (event *eventThreadSafe) StartTimer(name string) {
+// Get end time of current event data.
+func (event *eventThreadSafe) GetEndTime() time.Time {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.StartTimer(name)
+	return event.delegate.GetEndTime()
 }
 
-func (event *eventThreadSafe) EndTimer(name string) {
+// ************* Payload *************
+
+// Add payload as zap.Field.
+// Payload could be anything with RPC requests or user event such as http request param.
+func (event *eventThreadSafe) AddPayloads(fields ...zap.Field) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.EndTimer(name)
+	event.delegate.AddPayloads(fields...)
 }
 
-func (event *eventThreadSafe) UpdateTimer(name string, elapsedMS int64) {
+// List payloads.
+func (event *eventThreadSafe) ListPayloads() []zap.Field {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.UpdateTimer(name, elapsedMS)
+	return event.delegate.ListPayloads()
 }
 
-func (event *eventThreadSafe) UpdateTimerWithSample(name string, elapsedMS, sample int64) {
+// ************* Identity *************
+
+// Get event id of current event.
+func (event *eventThreadSafe) GetEventId() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.UpdateTimerWithSample(name, elapsedMS, sample)
+	return event.delegate.GetEventId()
 }
 
-func (event *eventThreadSafe) GetTimeElapsedMS(name string) int64 {
+// Set event id of current event.
+// A new event id would be created while event data was created from EventFactory.
+// User could override event id with this function.
+func (event *eventThreadSafe) SetEventId(id string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	return event.GetTimeElapsedMS(name)
+	event.delegate.SetEventId(id)
 }
 
-func (event *eventThreadSafe) GetRemoteAddr() string {
+// Get trace id of current event.
+func (event *eventThreadSafe) GetTraceId() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	return event.delegate.GetRemoteAddr()
+	return event.GetTraceId()
 }
 
-func (event *eventThreadSafe) SetRemoteAddr(addr string) {
+// Set trace id of current event.
+func (event *eventThreadSafe) SetTraceId(id string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.SetRemoteAddr(addr)
+	event.delegate.SetTraceId(id)
 }
 
-func (event *eventThreadSafe) GetCounter(key string) int64 {
+// Get request id of current event.
+func (event *eventThreadSafe) GetRequestId() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	return event.delegate.GetCounter(key)
+	return event.delegate.GetRequestId()
 }
 
-func (event *eventThreadSafe) SetCounter(key string, value int64) {
+// Set request id of current event.
+func (event *eventThreadSafe) SetRequestId(id string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.SetCounter(key, value)
+	event.delegate.SetRequestId(id)
 }
 
-func (event *eventThreadSafe) InCCounter(key string, value int64) {
-	event.lock.Lock()
-	defer event.lock.Unlock()
+// ************* Error *************
 
-	event.delegate.InCCounter(key, value)
-}
-
-func (event *eventThreadSafe) AddPair(key, value string) {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	event.delegate.AddPair(key, value)
-}
-
+// Add an error into event which could be printed with error.Error() function.
 func (event *eventThreadSafe) AddErr(err error) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -214,13 +132,8 @@ func (event *eventThreadSafe) AddErr(err error) {
 	event.delegate.AddErr(err)
 }
 
-func (event *eventThreadSafe) SetResCode(resCode string) {
-	event.lock.Lock()
-	defer event.lock.Unlock()
-
-	event.delegate.SetResCode(resCode)
-}
-
+// Get error count.
+// We will use value of error.Error() as the key.
 func (event *eventThreadSafe) GetErrCount(err error) int64 {
 	event.lock.Lock()
 	defer event.lock.Unlock()
@@ -228,93 +141,154 @@ func (event *eventThreadSafe) GetErrCount(err error) int64 {
 	return event.delegate.GetErrCount(err)
 }
 
-func (event *eventThreadSafe) AddFields(fields ...zap.Field) {
+// ************* Event *************
+
+// Get operation of current event.
+func (event *eventThreadSafe) GetOperation() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.AddFields(fields...)
+	return event.delegate.GetOperation()
 }
 
-func (event *eventThreadSafe) GetFields() []zap.Field {
+// Set operation of current event.
+func (event *eventThreadSafe) SetOperation(operation string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	return event.delegate.GetFields()
+	event.delegate.SetOperation(operation)
 }
 
-func (event *eventThreadSafe) RecordHistoryEvent(name string) {
+// Get remote address of current event.
+func (event *eventThreadSafe) GetRemoteAddr() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.RecordHistoryEvent(name)
+	return event.delegate.GetRemoteAddr()
 }
 
-func (event *eventThreadSafe) WriteLog() {
+// Set remote address of current event, mainly used in RPC calls.
+// Default value of <localhost> would be assigned while creating event via EventFactory.
+func (event *eventThreadSafe) SetRemoteAddr(addr string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.delegate.WriteLog()
+	event.delegate.SetRemoteAddr(addr)
 }
 
-func (event *eventThreadSafe) setLogger(logger *zap.Logger) {
+// Get response code of current event.
+// Mainly used in RPC calls.
+func (event *eventThreadSafe) GetResCode() string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setLogger(logger)
+	return event.delegate.GetResCode()
 }
 
-func (event *eventThreadSafe) setFormat(format format) {
+// Set response code of current event.
+func (event *eventThreadSafe) SetResCode(resCode string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setFormat(format)
+	event.delegate.SetResCode(resCode)
 }
 
-func (event *eventThreadSafe) setQuietMode(quietMode bool) {
+// Get event status of current event.
+// Available event status as bellow:
+// 1: NotStarted
+// 2: InProgress
+// 3: Ended
+func (event *eventThreadSafe) GetEventStatus() eventStatus {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setQuietMode(quietMode)
+	return event.delegate.GetEventStatus()
 }
 
-func (event *eventThreadSafe) setEntryName(entryName string) {
+// Start timer of current sub event.
+func (event *eventThreadSafe) StartTimer(name string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setEntryName(entryName)
+	event.delegate.StartTimer(name)
 }
 
-func (event *eventThreadSafe) setEntryType(entryType string) {
+// End timer of current sub event.
+func (event *eventThreadSafe) EndTimer(name string) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setEntryType(entryType)
+	event.delegate.EndTimer(name)
 }
 
-func (event *eventThreadSafe) setAppName(appName string) {
+// Update timer of current sub event with time elapsed in milli seconds.
+func (event *eventThreadSafe) UpdateTimerMs(name string, elapsedMs int64) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setAppName(appName)
+	event.UpdateTimerMs(name, elapsedMs)
 }
 
-func (event *eventThreadSafe) setAppVersion(appVersion string) {
+// Update timer of current sub event with time elapsed in milli seconds and sample.
+func (event *eventThreadSafe) UpdateTimerMsWithSample(name string, elapsedMs, sample int64) {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setAppVersion(appVersion)
+	event.delegate.UpdateTimerMsWithSample(name, elapsedMs, sample)
 }
 
-func (event *eventThreadSafe) setLocale(locale string) {
+// Get timer elapsed in milli seconds.
+func (event *eventThreadSafe) GetTimeElapsedMs(name string) int64 {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setLocale(locale)
+	return event.delegate.GetTimeElapsedMs(name)
 }
 
-func (event *eventThreadSafe) setHostname(hostname string) {
+// Get value with key in pairs.
+func (event *eventThreadSafe) GetValueFromPair(key string) string {
 	event.lock.Lock()
 	defer event.lock.Unlock()
 
-	event.setHostname(hostname)
+	return event.delegate.GetValueFromPair(key)
+}
+
+// Add value with key in pairs.
+func (event *eventThreadSafe) AddPair(key, value string) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.AddPair(key, value)
+}
+
+// Get counter of current event.
+func (event *eventThreadSafe) GetCounter(key string) int64 {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	return event.delegate.GetCounter(key)
+}
+
+// Set counter of current event.
+func (event *eventThreadSafe) SetCounter(key string, value int64) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.SetCounter(key, value)
+}
+
+// Increase counter of current event.
+func (event *eventThreadSafe) IncCounter(key string, delta int64) {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.IncCounter(key, delta)
+}
+
+// Set event status and flush to logger.
+func (event *eventThreadSafe) Finish() {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.Finish()
 }

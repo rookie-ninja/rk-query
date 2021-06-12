@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -55,7 +55,7 @@ func withEventJSONFormat() {
 		rkquery.WithAppName("appName"),
 		rkquery.WithFormat(rkquery.JSON),
 		rkquery.WithOperation("op"),
-		rkquery.WithLogger(logger))
+		rkquery.WithZapLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -64,11 +64,11 @@ func withEventJSONFormat() {
 	event.EndTimer("t1")
 	event.AddPair("key", "value")
 	event.SetCounter("count", 1)
-	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
+	event.AddPayloads(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
 	event.AddErr(MyError{})
 	event.SetResCode("200")
 	event.SetEndTime(time.Now())
-	event.WriteLog()
+	event.Finish()
 }
 
 func withEventRkFormat() {
@@ -82,7 +82,7 @@ func withEventRkFormat() {
 		rkquery.WithLocale("rk::ap-guangzhou::ap-guangzhou-1::beta"),
 		rkquery.WithFormat(rkquery.RK),
 		rkquery.WithOperation("op"),
-		rkquery.WithLogger(logger))
+		rkquery.WithZapLogger(logger))
 	event := fac.CreateEvent()
 
 	event.SetStartTime(time.Now())
@@ -91,16 +91,16 @@ func withEventRkFormat() {
 	event.EndTimer("t1")
 	event.AddPair("key", "value")
 	event.SetCounter("count", 1)
-	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
+	event.AddPayloads(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
 	event.AddErr(MyError{})
 	event.SetResCode("200")
 	event.SetEndTime(time.Now())
-	event.WriteLog()
+	event.Finish()
 }
 
 func withEventHelper() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
-	helper := rkquery.NewEventHelper(rkquery.NewEventFactory(rkquery.WithLogger(logger)))
+	helper := rkquery.NewEventHelper(rkquery.NewEventFactory(rkquery.WithZapLogger(logger)))
 
 	event := helper.Start("op")
 	helper.Finish(event)
@@ -109,5 +109,5 @@ func withEventHelper() {
 type MyError struct{}
 
 func (err MyError) Error() string {
-	return ""
+	return "my error"
 }

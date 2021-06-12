@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -14,12 +14,14 @@ import (
 type timeTracker struct {
 	name            string
 	indexCurr       int64
-	lastTimestampMS int64
+	lastTimestampMs int64
 	countTotal      int64
-	elapsedTotalMS  int64
+	elapsedTotalMs  int64
 	isFinished      bool
 }
 
+// Create a new timeTracker with name.
+// Name should be unique.
 func newTimeTracker(name string) *timeTracker {
 	if len(name) == 0 {
 		return nil
@@ -28,27 +30,31 @@ func newTimeTracker(name string) *timeTracker {
 	return &timeTracker{
 		name:            name,
 		indexCurr:       0,
-		lastTimestampMS: 0,
+		lastTimestampMs: 0,
 		countTotal:      0,
-		elapsedTotalMS:  0,
+		elapsedTotalMs:  0,
 		isFinished:      false,
 	}
 }
 
+// Get name of current timeTracker.
 func (tracker *timeTracker) GetName() string {
 	return tracker.name
 }
 
+// Get count of how many times Start() has been called.
 func (tracker *timeTracker) GetCount() int64 {
 	return tracker.countTotal
 }
 
-func (tracker *timeTracker) GetElapsedMS() int64 {
-	return tracker.elapsedTotalMS
+// Get elapsed time in milli seconds.
+func (tracker *timeTracker) GetElapsedMs() int64 {
+	return tracker.elapsedTotalMs
 }
 
-func (tracker *timeTracker) Start(nowMS int64) {
-	if nowMS < 0 {
+// Start current timer with provided timestamp.
+func (tracker *timeTracker) Start(nowMs int64) {
+	if nowMs < 0 {
 		return
 	}
 
@@ -62,40 +68,44 @@ func (tracker *timeTracker) Start(nowMS int64) {
 	// In case above, the x-axis represents the time, y-axis represents concurrent event.
 	// The total time elapsed would be 18 with this formula: 17 = 12 + 3 + 2
 	if tracker.indexCurr > 0 {
-		tracker.elapsedTotalMS += tracker.indexCurr * (nowMS - tracker.lastTimestampMS)
+		tracker.elapsedTotalMs += tracker.indexCurr * (nowMs - tracker.lastTimestampMs)
 	}
 
-	tracker.lastTimestampMS = nowMS
+	tracker.lastTimestampMs = nowMs
 	tracker.countTotal++
 	tracker.indexCurr++
 }
 
-func (tracker *timeTracker) End(nowMS int64) {
-	if tracker.indexCurr < 1 || nowMS < 0 {
+// End current timer with provided timestamp.
+func (tracker *timeTracker) End(nowMs int64) {
+	if tracker.indexCurr < 1 || nowMs < 0 {
 		return
 	}
 
-	tracker.elapsedTotalMS += tracker.indexCurr * (nowMS - tracker.lastTimestampMS)
-	tracker.lastTimestampMS = nowMS
+	tracker.elapsedTotalMs += tracker.indexCurr * (nowMs - tracker.lastTimestampMs)
+	tracker.lastTimestampMs = nowMs
 	tracker.indexCurr--
 }
 
-func (tracker *timeTracker) Elapse(elapseTimeMS int64) {
-	if elapseTimeMS < 0 {
+// Force to elapse timer.
+func (tracker *timeTracker) Elapse(elapseTimeMs int64) {
+	if elapseTimeMs < 0 {
 		return
 	}
-	tracker.ElapseWithSample(elapseTimeMS, 1)
+	tracker.ElapseWithSample(elapseTimeMs, 1)
 }
 
-func (tracker *timeTracker) ElapseWithSample(elapseTimeMS int64, numSample int64) {
-	if elapseTimeMS < 0 || numSample < 0 {
+// For to elapse timer with number of sample.
+func (tracker *timeTracker) ElapseWithSample(elapseTimeMs int64, numSample int64) {
+	if elapseTimeMs < 0 || numSample < 0 {
 		return
 	}
 
 	tracker.countTotal += numSample
-	tracker.elapsedTotalMS += elapseTimeMS
+	tracker.elapsedTotalMs += elapseTimeMs
 }
 
+// stop current timer.
 func (tracker *timeTracker) Finish() {
 	tracker.isFinished = true
 
@@ -103,35 +113,36 @@ func (tracker *timeTracker) Finish() {
 		return
 	}
 
-	nowMS := toMillisecond(time.Now())
+	nowMs := toMillisecond(time.Now())
 
-	tracker.elapsedTotalMS += tracker.indexCurr * (nowMS - tracker.lastTimestampMS)
-	tracker.lastTimestampMS = nowMS
+	tracker.elapsedTotalMs += tracker.indexCurr * (nowMs - tracker.lastTimestampMs)
+	tracker.lastTimestampMs = nowMs
 	tracker.indexCurr = 0
 }
 
+// Convert to zap fields.
 func (tracker *timeTracker) ToZapFields(enc *zapcore.MapObjectEncoder) []zap.Field {
 	if tracker.indexCurr == 0 {
 		if enc != nil {
-			enc.AddInt64(tracker.name+".elapsed_ms", tracker.elapsedTotalMS)
+			enc.AddInt64(tracker.name+".elapsedMs", tracker.elapsedTotalMs)
 			enc.AddInt64(tracker.name+".count", tracker.countTotal)
 		}
 
 		return []zap.Field{
-			zap.Int64(tracker.name+".elapsed_ms", tracker.elapsedTotalMS),
+			zap.Int64(tracker.name+".elapsedMs", tracker.elapsedTotalMs),
 			zap.Int64(tracker.name+".count", tracker.countTotal),
 		}
 	}
 
-	nowMS := toMillisecond(time.Now())
-	elapsedMS := tracker.elapsedTotalMS + tracker.indexCurr*(nowMS-tracker.lastTimestampMS)
+	nowMs := toMillisecond(time.Now())
+	elapsedMs := tracker.elapsedTotalMs + tracker.indexCurr*(nowMs-tracker.lastTimestampMs)
 
 	if enc != nil {
-		enc.AddInt64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", tracker.elapsedTotalMS)
+		enc.AddInt64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsedMs", tracker.elapsedTotalMs)
 		enc.AddInt64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal)
 	}
 	return []zap.Field{
-		zap.Int64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsed_ms", elapsedMS),
+		zap.Int64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".elapsedMs", elapsedMs),
 		zap.Int64(tracker.name+openMarker+strconv.FormatInt(tracker.indexCurr, 10)+".count", tracker.countTotal),
 	}
 }

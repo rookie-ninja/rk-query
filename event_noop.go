@@ -1,3 +1,7 @@
+// Copyright (c) 2021 rookie-ninja
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
 package rkquery
 
 import (
@@ -7,128 +11,184 @@ import (
 
 type eventNoop struct{}
 
-func (eventNoop) GetValue(string) string {
-	return ""
+// ************* Time *************
+
+// Set start timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
+func (event *eventNoop) SetStartTime(time.Time) {
+	// Noop
 }
 
-func (eventNoop) GetEntryName() string {
-	return ""
-}
-
-func (eventNoop) GetEntryType() string {
-	return ""
-}
-
-func (eventNoop) GetAppName() string {
-	return ""
-}
-
-func (eventNoop) GetAppVersion() string {
-	return ""
-}
-
-func (eventNoop) GetLocale() string {
-	return ""
-}
-
-func (eventNoop) GetEventId() string {
-	return ""
-}
-
-func (eventNoop) SetEventId(string) {}
-
-func (eventNoop) GetHostname() string {
-	return ""
-}
-
-func (eventNoop) GetLogger() *zap.Logger {
-	return zap.NewNop()
-}
-
-func (eventNoop) GetOperation() string {
-	return ""
-}
-
-func (eventNoop) SetOperation(string) {}
-
-func (eventNoop) GetEventStatus() eventStatus {
-	return notStarted
-}
-
-func (eventNoop) SetStartTime(time.Time) {}
-
-func (eventNoop) GetStartTime() time.Time {
+// Get start time of current event data.
+func (event *eventNoop) GetStartTime() time.Time {
 	return time.Now()
 }
 
-func (eventNoop) GetEndTime() time.Time {
+// Set end timer of current event. This can be overridden by user.
+// We keep this function open in order to mock event during unit test.
+func (event *eventNoop) SetEndTime(time.Time) {
+	// Noop
+}
+
+// Get end time of current event data.
+func (event *eventNoop) GetEndTime() time.Time {
 	return time.Now()
 }
 
-func (eventNoop) SetEndTime(time.Time) {}
+// ************* Payload *************
 
-func (eventNoop) StartTimer(string) {}
-
-func (eventNoop) EndTimer(string) {}
-
-func (eventNoop) UpdateTimer(string, int64) {}
-
-func (eventNoop) UpdateTimerWithSample(string, int64, int64) {}
-
-func (eventNoop) GetTimeElapsedMS(string) int64 {
-	return 0
+// Add payload as zap.Field.
+// Payload could be anything with RPC requests or user event such as http request param.
+func (event *eventNoop) AddPayloads(...zap.Field) {
+	// Noop
 }
 
-func (eventNoop) GetRemoteAddr() string {
+// List payloads.
+func (event *eventNoop) ListPayloads() []zap.Field {
+	return []zap.Field{}
+}
+
+// ************* Identity *************
+
+// Get event id of current event.
+func (event *eventNoop) GetEventId() string {
 	return ""
 }
 
-func (eventNoop) SetRemoteAddr(string) {}
+// Set event id of current event.
+// A new event id would be created while event data was created from EventFactory.
+// User could override event id with this function.
+func (event *eventNoop) SetEventId(string) {
+	// Noop
+}
 
-func (eventNoop) GetCounter(string) int64 {
+// Get trace id of current event.
+func (event *eventNoop) GetTraceId() string {
+	return ""
+}
+
+// Set trace id of current event.
+func (event *eventNoop) SetTraceId(string) {
+	// Noop
+}
+
+// Get request id of current event.
+func (event *eventNoop) GetRequestId() string {
+	return ""
+}
+
+// Set request id of current event.
+func (event *eventNoop) SetRequestId(string) {
+	// Noop
+}
+
+// ************* Error *************
+
+// Add an error into event which could be printed with error.Error() function.
+func (event *eventNoop) AddErr(error) {
+	// Noop
+}
+
+// Get error count.
+// We will use value of error.Error() as the key.
+func (event *eventNoop) GetErrCount(error) int64 {
 	return 0
 }
 
-func (eventNoop) SetCounter(string, int64) {}
+// ************* Event *************
 
-func (eventNoop) InCCounter(string, int64) {}
-
-func (eventNoop) AddPair(string, string) {}
-
-func (eventNoop) AddErr(error) {
+// Get operation of current event.
+func (event *eventNoop) GetOperation() string {
+	return ""
 }
 
-func (eventNoop) SetResCode(string) {
+// Set operation of current event.
+func (event *eventNoop) SetOperation(string) {
+	// Noop
 }
 
-func (eventNoop) GetErrCount(error) int64 {
+// Get remote address of current event.
+func (event *eventNoop) GetRemoteAddr() string {
+	return ""
+}
+
+// Set remote address of current event, mainly used in RPC calls.
+// Default value of <localhost> would be assigned while creating event via EventFactory.
+func (event *eventNoop) SetRemoteAddr(string) {
+	// Noop
+}
+
+// Get response code of current event.
+// Mainly used in RPC calls.
+func (event *eventNoop) GetResCode() string {
+	return ""
+}
+
+// Set response code of current event.
+func (event *eventNoop) SetResCode(string) {
+	// Noop
+}
+
+// Get event status of current event.
+// Available event status as bellow:
+// 1: NotStarted
+// 2: InProgress
+// 3: Ended
+func (event *eventNoop) GetEventStatus() eventStatus {
+	return NotStarted
+}
+
+// Start timer of current sub event.
+func (event *eventNoop) StartTimer(string) {
+	// Noop
+}
+
+// End timer of current sub event.
+func (event *eventNoop) EndTimer(string) {
+	// Noop
+}
+
+// Update timer of current sub event with time elapsed in milli seconds.
+func (event *eventNoop) UpdateTimerMs(string, int64) {
+	// Noop
+}
+
+// Update timer of current sub event with time elapsed in milli seconds and sample.
+func (event *eventNoop) UpdateTimerMsWithSample(string, int64, int64) {
+	// Noop
+}
+
+// Get timer elapsed in milli seconds.
+func (event *eventNoop) GetTimeElapsedMs(string) int64 {
 	return 0
 }
 
-func (eventNoop) AddFields(...zap.Field) {}
-
-func (eventNoop) GetFields() []zap.Field {
-	return make([]zap.Field, 0)
+// Get value with key in pairs.
+func (event *eventNoop) GetValueFromPair(string) string {
+	return ""
 }
 
-func (eventNoop) RecordHistoryEvent(string) {}
+// Add value with key in pairs.
+func (event *eventNoop) AddPair(string, string) {
+	// Noop
+}
 
-func (eventNoop) WriteLog() {}
+// Get counter of current event.
+func (event *eventNoop) GetCounter(string) int64 {
+	return 0
+}
 
-func (eventNoop) setLogger(*zap.Logger) {}
+// Set counter of current event.
+func (event *eventNoop) SetCounter(string, int64) {
+	// Noop
+}
 
-func (eventNoop) setFormat(format) {}
+// Increase counter of current event.
+func (event *eventNoop) IncCounter(string, int64) {
+	// Noop
+}
 
-func (eventNoop) setQuietMode(bool) {}
-
-func (eventNoop) setEntryName(string) {}
-
-func (eventNoop) setEntryType(string) {}
-
-func (eventNoop) setAppName(string) {}
-
-func (eventNoop) setAppVersion(string) {}
-
-func (eventNoop) setLocale(string) {}
-
-func (eventNoop) setHostname(string) {}
+// Set event status and flush to logger.
+func (event *eventNoop) Finish() {
+	// Noop
+}

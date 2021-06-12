@@ -1,4 +1,4 @@
-// Copyright (c) 2020 rookie-ninja
+// Copyright (c) 2021 rookie-ninja
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -47,6 +47,7 @@ type EventHelper struct {
 	Factory *EventFactory
 }
 
+// Crate a new event helper.
 func NewEventHelper(factory *EventFactory) *EventHelper {
 	if factory == nil {
 		factory = NewEventFactory()
@@ -54,6 +55,7 @@ func NewEventHelper(factory *EventFactory) *EventHelper {
 	return &EventHelper{factory}
 }
 
+// Create and start a new event with options.
 func (helper *EventHelper) Start(operation string, opts ...EventOption) Event {
 	event := helper.Factory.CreateEvent(opts...)
 
@@ -62,11 +64,13 @@ func (helper *EventHelper) Start(operation string, opts ...EventOption) Event {
 	return event
 }
 
+// Finish current event.
 func (helper *EventHelper) Finish(event Event) {
 	event.SetEndTime(time.Now())
-	event.WriteLog()
+	event.Finish()
 }
 
+// Finish current event with condition.
 func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
@@ -77,6 +81,7 @@ func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	helper.Finish(event)
 }
 
+// Finish current event with error.
 func (helper *EventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
