@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"os"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 )
@@ -19,6 +18,13 @@ import (
 const (
 	goos   = runtime.GOOS
 	goArch = runtime.GOARCH
+)
+
+var (
+	realm  = getDefaultIfEmptyString(os.Getenv("REALM"), "*")
+	region = getDefaultIfEmptyString(os.Getenv("REGION"), "*")
+	az     = getDefaultIfEmptyString(os.Getenv("AZ"), "*")
+	domain = getDefaultIfEmptyString(os.Getenv("DOMAIN"), "*")
 )
 
 type EventOption func(Event)
@@ -107,18 +113,6 @@ func WithAppVersion(appVersion string) EventOption {
 	}
 }
 
-// Provide locale.
-func WithLocale(locale string) EventOption {
-	return func(event Event) {
-		switch v := event.(type) {
-		case *eventZap:
-			v.locale = locale
-		case *eventThreadSafe:
-			v.delegate.locale = locale
-		}
-	}
-}
-
 // Provide operation.
 func WithOperation(operation string) EventOption {
 	return func(event Event) {
@@ -158,7 +152,6 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 		entryName:  unknown,
 		entryType:  unknown,
 		hostname:   obtainHostName(),
-		locale:     getLocale(),
 		eventId:    generateEventId(),
 		traceId:    "",
 		requestId:  "",
@@ -216,27 +209,6 @@ func obtainHostName() string {
 	return hostName
 }
 
-// Get locale from environment variable
-func getLocale() string {
-	realm, region, az, domain := "*", "*", "*", "*"
-	if v := os.Getenv("REALM"); len(v) > 0 {
-		realm = v
-	}
-	if v := os.Getenv("REGION"); len(v) > 0 {
-		region = v
-	}
-	if v := os.Getenv("AZ"); len(v) > 0 {
-		az = v
-	}
-	if v := os.Getenv("DOMAIN"); len(v) > 0 {
-		domain = v
-	}
-
-	elements := []string{realm, region, az, domain}
-
-	return strings.Join(elements, "::")
-}
-
 // Generate request id based on google/uuid.
 // UUIDs are based on RFC 4122 and DCE 1.1: Authentication and Security Services.
 //
@@ -257,4 +229,13 @@ func generateEventId() string {
 func getTimeZone() string {
 	zone, _ := time.Now().Zone()
 	return zone
+}
+
+// Return default value if original string is empty.
+func getDefaultIfEmptyString(origin, def string) string {
+	if len(origin) < 1 {
+		return def
+	}
+
+	return origin
 }

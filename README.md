@@ -89,7 +89,7 @@ elapsedNano=1003868481
 timezone=CST
 ids={"eventId":"581812ae-924a-44b2-83f8-fa8eef071393"}
 app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
-env={"arch":"amd64","hostname":"lark.local","locale":"rk::ap-guangzhou::ap-guangzhou-1::beta","os":"darwin"}
+env={"arch":"amd64","hostname":"lark.local","realm":"*","region":"*","az":"*","domain":"*","os":"darwin"}
 payloads={"f1":"f2","t2":"2021-06-13T01:16:27.58554+08:00"}
 error={"my error":1}
 counters={"count":1}
@@ -182,7 +182,10 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
     "env":{
         "arch":"amd64",
         "hostname":"lark.local",
-        "locale":"*::*::*::*",
+        "realm":"*",
+        "region":"*",
+        "az":"*",
+        "domain":"*",
         "os":"darwin"
     },
     "payloads":{

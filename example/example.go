@@ -79,7 +79,6 @@ func withEventRkFormat() {
 		rkquery.WithEntryType("example"),
 		rkquery.WithAppName("appName"),
 		rkquery.WithAppVersion("v0.0.1"),
-		rkquery.WithLocale("rk::ap-guangzhou::ap-guangzhou-1::beta"),
 		rkquery.WithFormat(rkquery.RK),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
