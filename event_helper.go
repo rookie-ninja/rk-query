@@ -66,6 +66,7 @@ func (helper *EventHelper) Start(operation string, opts ...EventOption) Event {
 
 // Finish current event.
 func (helper *EventHelper) Finish(event Event) {
+	event.SetResCode("OK")
 	event.SetEndTime(time.Now())
 	event.Finish()
 }
@@ -74,11 +75,14 @@ func (helper *EventHelper) Finish(event Event) {
 func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
+		event.SetResCode("OK")
 	} else {
 		event.SetCounter("failure", 1)
+		event.SetResCode("Fail")
 	}
 
-	helper.Finish(event)
+	event.SetEndTime(time.Now())
+	event.Finish()
 }
 
 // Finish current event with error.
@@ -86,6 +90,8 @@ func (helper *EventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)
 	}
+
+	event.SetResCode("Fail")
 
 	event.AddErr(err)
 	helper.FinishWithCond(event, false)
