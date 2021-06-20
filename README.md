@@ -7,8 +7,8 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [With Rk format](#with-rk-format)
-  - [With JSON format](#with-json-format)
+  - [With Console encoding](#with-console-encoding)
+  - [With JSON encoding](#with-json-encoding)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
@@ -22,8 +22,8 @@ Zap logger needs to be pass to query in order to write logs
 
 Please refer https://github.com/rookie-ninja/rk-logger for easy initialization of zap logger
 
-### With Rk format
-It is human friendly printed query log format
+### With Console encoding
+It is human friendly printed query log encoding type.
 
 Example:
 ```go
@@ -58,12 +58,12 @@ var (
    }`)
 )
 
-func withEventRkFormat() {
+func withEventConsoleEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
 	fac := rkquery.NewEventFactory(
 		rkquery.WithAppName("appName"),
-		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithEncoding(rkquery.CONSOLE),
 		rkquery.WithOperation("op"),
 		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()
@@ -102,8 +102,8 @@ eventStatus=Ended
 EOE
 ```
 
-### With JSON format
-It is parsing friendly printed query log format
+### With JSON encoding
+It is parsing friendly printed query log encoding type.
 
 Example:
 ```go
@@ -138,12 +138,12 @@ var (
    }`)
 )
 
-func withEventJSONFormat() {
+func withEventJSONEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
 	fac := rkquery.NewEventFactory(
 		rkquery.WithAppName("appName"),
-		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithEncoding(rkquery.JSON),
 		rkquery.WithOperation("op"),
 		rkquery.WithLogger(logger))
 	event := fac.CreateEvent()

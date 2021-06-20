@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"strings"
 	"time"
 )
 
@@ -36,39 +37,39 @@ func (status eventStatus) String() string {
 	return names[status]
 }
 
-type format int
+type encoding int
 
 const (
-	JSON format = 0
-	RK   format = 1
+	JSON    encoding = 0
+	CONSOLE encoding = 1
 )
 
 // Stringer above config file types.
-func (fileType format) String() string {
-	names := [...]string{"JSON", "RK"}
+func (ec encoding) String() string {
+	names := [...]string{"json", "console"}
 
 	// Please do not forget to change the boundary while adding a new config file types
-	if fileType < JSON || fileType > RK {
+	if ec < JSON || ec > CONSOLE {
 		return "UNKNOWN"
 	}
 
-	return names[fileType]
+	return names[ec]
 }
 
-func ToFormat(f string) format {
-	if f == "JSON" {
+func ToEncoding(f string) encoding {
+	if strings.ToLower(f) == "json" {
 		return JSON
-	} else if f == "RK" {
-		return RK
+	} else if strings.ToLower(f) == "console" {
+		return CONSOLE
 	}
 
-	return RK
+	return CONSOLE
 }
 
 // It is not thread safe.
 type eventZap struct {
 	logger     *zap.Logger
-	format     format
+	encoding   encoding
 	quietMode  bool
 	appName    string                    // Application
 	appVersion string                    // Application
@@ -374,10 +375,10 @@ func (event *eventZap) Finish() {
 	if event.quietMode {
 		return
 	}
-	if event.format == JSON {
+	if event.encoding == JSON {
 		event.logger.With(event.toJsonFormat()...).Info("")
 	} else {
-		event.logger.Info(event.toRkFormat())
+		event.logger.Info(event.toConsoleFormat())
 	}
 
 	// finish any Time Aggregators that may not be done
@@ -389,7 +390,7 @@ func (event *eventZap) Finish() {
 // ************* Internal *************
 
 // Marshal to RK format.
-func (event *eventZap) toRkFormat() string {
+func (event *eventZap) toConsoleFormat() string {
 	builder := &bytes.Buffer{}
 
 	builder.WriteString(scopeDelimiter + "\n")

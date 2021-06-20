@@ -47,13 +47,13 @@ func WithZapLogger(logger *zap.Logger) EventOption {
 }
 
 // Provide format.
-func WithFormat(format format) EventOption {
+func WithEncoding(ec encoding) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
-			v.format = format
+			v.encoding = ec
 		case *eventThreadSafe:
-			v.delegate.format = format
+			v.delegate.encoding = ec
 		}
 	}
 }
@@ -150,7 +150,7 @@ func NewEventFactory(option ...EventOption) *EventFactory {
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &eventZap{
 		logger:     rklogger.EventLogger,
-		format:     RK,
+		encoding:   CONSOLE,
 		quietMode:  false,
 		appName:    "",
 		appVersion: "",

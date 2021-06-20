@@ -43,17 +43,17 @@ var (
 )
 
 func main() {
-	withEventRkFormat()
-	withEventJSONFormat()
+	withEventConsoleEncoding()
+	withEventJSONEncoding()
 	withEventHelper()
 }
 
-func withEventJSONFormat() {
+func withEventJSONEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
 	fac := rkquery.NewEventFactory(
 		rkquery.WithAppName("appName"),
-		rkquery.WithFormat(rkquery.JSON),
+		rkquery.WithEncoding(rkquery.JSON),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
 	event := fac.CreateEvent()
@@ -71,7 +71,7 @@ func withEventJSONFormat() {
 	event.Finish()
 }
 
-func withEventRkFormat() {
+func withEventConsoleEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
 	fac := rkquery.NewEventFactory(
@@ -79,7 +79,7 @@ func withEventRkFormat() {
 		rkquery.WithEntryType("example"),
 		rkquery.WithAppName("appName"),
 		rkquery.WithAppVersion("v0.0.1"),
-		rkquery.WithFormat(rkquery.RK),
+		rkquery.WithEncoding(rkquery.CONSOLE),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
 	event := fac.CreateEvent()
