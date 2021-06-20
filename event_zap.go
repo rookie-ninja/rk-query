@@ -40,8 +40,8 @@ func (status eventStatus) String() string {
 type Encoding int
 
 const (
-	JSON    Encoding = 0
-	CONSOLE Encoding = 1
+	CONSOLE Encoding = 0
+	JSON    Encoding = 1
 )
 
 // Stringer above config file types.
