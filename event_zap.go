@@ -37,15 +37,15 @@ func (status eventStatus) String() string {
 	return names[status]
 }
 
-type encoding int
+type Encoding int
 
 const (
-	JSON    encoding = 0
-	CONSOLE encoding = 1
+	JSON    Encoding = 0
+	CONSOLE Encoding = 1
 )
 
 // Stringer above config file types.
-func (ec encoding) String() string {
+func (ec Encoding) String() string {
 	names := [...]string{"json", "console"}
 
 	// Please do not forget to change the boundary while adding a new config file types
@@ -56,7 +56,7 @@ func (ec encoding) String() string {
 	return names[ec]
 }
 
-func ToEncoding(f string) encoding {
+func ToEncoding(f string) Encoding {
 	if strings.ToLower(f) == "json" {
 		return JSON
 	} else if strings.ToLower(f) == "console" {
@@ -69,7 +69,7 @@ func ToEncoding(f string) encoding {
 // It is not thread safe.
 type eventZap struct {
 	logger     *zap.Logger
-	encoding   encoding
+	encoding   Encoding
 	quietMode  bool
 	appName    string                    // Application
 	appVersion string                    // Application

@@ -47,7 +47,7 @@ func WithZapLogger(logger *zap.Logger) EventOption {
 }
 
 // Provide format.
-func WithEncoding(ec encoding) EventOption {
+func WithEncoding(ec Encoding) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
