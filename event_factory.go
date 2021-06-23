@@ -37,6 +37,10 @@ type EventOption func(Event)
 // Provide zap logger.
 func WithZapLogger(logger *zap.Logger) EventOption {
 	return func(event Event) {
+		if logger == nil {
+			return
+		}
+
 		switch v := event.(type) {
 		case *eventZap:
 			v.logger = logger
