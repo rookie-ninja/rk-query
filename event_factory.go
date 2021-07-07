@@ -24,10 +24,10 @@ const (
 )
 
 var (
-	realm    = getDefaultIfEmptyString(os.Getenv("REALM"), "*")
-	region   = getDefaultIfEmptyString(os.Getenv("REGION"), "*")
-	az       = getDefaultIfEmptyString(os.Getenv("AZ"), "*")
-	domain   = getDefaultIfEmptyString(os.Getenv("DOMAIN"), "*")
+	realm    = ""
+	region   = ""
+	az       = ""
+	domain   = ""
 	localIp  = getLocalIP()
 	hostname = getHostName()
 )
@@ -146,6 +146,11 @@ func NewEventFactory(option ...EventOption) *EventFactory {
 	factory := &EventFactory{
 		options: option,
 	}
+
+	realm = getDefaultIfEmptyString(os.Getenv("REALM"), "*")
+	region = getDefaultIfEmptyString(os.Getenv("REGION"), "*")
+	az = getDefaultIfEmptyString(os.Getenv("AZ"), "*")
+	domain = getDefaultIfEmptyString(os.Getenv("DOMAIN"), "*")
 
 	return factory
 }
