@@ -1,6 +1,7 @@
 # rk-query
 [![build](https://github.com/rookie-ninja/rk-query/actions/workflows/ci.yml/badge.svg)](https://github.com/rookie-ninja/rk-query/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/rookie-ninja/rk-query/branch/master/graph/badge.svg?token=3QUPNQKM5B)](https://codecov.io/gh/rookie-ninja/rk-query)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-query)](https://goreportcard.com/report/github.com/rookie-ninja/rk-query)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberjack](https://github.com/natefinch/lumberjack) and [rk-logger](https://github.com/rookie-ninja/rk-logger)
