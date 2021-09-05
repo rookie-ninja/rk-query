@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/rookie-ninja/rk-query/branch/master/graph/badge.svg?token=3QUPNQKM5B)](https://codecov.io/gh/rookie-ninja/rk-query)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-query)](https://goreportcard.com/report/github.com/rookie-ninja/rk-query)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-query.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-query?ref=badge_shield)
 
 Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberjack](https://github.com/natefinch/lumberjack) and [rk-logger](https://github.com/rookie-ninja/rk-logger)
 
@@ -234,3 +235,7 @@ lark@rkdev.info.
 
 Released under the [Apache 2.0 License](LICENSE).
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-query.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Frookie-ninja%2Frk-query?ref=badge_large)
