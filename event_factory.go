@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
@@ -32,9 +33,10 @@ var (
 	hostname = getHostName()
 )
 
+// EventOption will be pass into EventFactory while creating Event to override fields in Event.
 type EventOption func(Event)
 
-// Provide zap logger.
+// WithZapLogger override logger in Event.
 func WithZapLogger(logger *zap.Logger) EventOption {
 	return func(event Event) {
 		if logger == nil {
@@ -50,9 +52,13 @@ func WithZapLogger(logger *zap.Logger) EventOption {
 	}
 }
 
-// Provide format.
+// WithEncoding override encoding in Event.
 func WithEncoding(ec Encoding) EventOption {
 	return func(event Event) {
+		if ec != JSON && ec != CONSOLE {
+			return
+		}
+
 		switch v := event.(type) {
 		case *eventZap:
 			v.encoding = ec
@@ -62,7 +68,7 @@ func WithEncoding(ec Encoding) EventOption {
 	}
 }
 
-// Turn on quiet mode which won't flush data to logger.
+// WithQuietMode turn on quiet mode which won't flush data to logger.
 func WithQuietMode(quietMode bool) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
@@ -74,7 +80,7 @@ func WithQuietMode(quietMode bool) EventOption {
 	}
 }
 
-// Provide entry name.
+// WithEntryName override entry name in Event.
 func WithEntryName(entryName string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
@@ -86,7 +92,7 @@ func WithEntryName(entryName string) EventOption {
 	}
 }
 
-// Provide entry type.
+// WithEntryType override entry type in Event.
 func WithEntryType(entryType string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
@@ -98,7 +104,7 @@ func WithEntryType(entryType string) EventOption {
 	}
 }
 
-// Provide app name.
+// WithAppName override app name in Event.
 func WithAppName(appName string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
@@ -110,7 +116,7 @@ func WithAppName(appName string) EventOption {
 	}
 }
 
-// Provide app version.
+// WithAppVersion overrides app version in event.
 func WithAppVersion(appVersion string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
@@ -122,26 +128,26 @@ func WithAppVersion(appVersion string) EventOption {
 	}
 }
 
-// Provide operation.
+// WithOperation overrides operation in Event.
 func WithOperation(operation string) EventOption {
 	return func(event Event) {
 		event.SetOperation(operation)
 	}
 }
 
-// Provide payloads with form of zap.Field.
+// WithPayloads overrides payloads with form of zap.Field in Event.
 func WithPayloads(fields ...zap.Field) EventOption {
 	return func(event Event) {
 		event.AddPayloads(fields...)
 	}
 }
 
-// Not thread safe!!!
+// EventFactory is not thread safe!!!
 type EventFactory struct {
 	options []EventOption
 }
 
-// Create a new event factory with option.
+// NewEventFactory creates a new event factory with option.
 func NewEventFactory(option ...EventOption) *EventFactory {
 	factory := &EventFactory{
 		options: option,
@@ -155,7 +161,7 @@ func NewEventFactory(option ...EventOption) *EventFactory {
 	return factory
 }
 
-// Create a new event with option.
+// CreateEvent creates a new event with options.
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &eventZap{
 		logger:     rklogger.EventLogger,
@@ -196,12 +202,12 @@ func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	return event
 }
 
-// Create a new noop event.
+// CreateEventNoop creates a new noop event.
 func (factory *EventFactory) CreateEventNoop() Event {
 	return &eventNoop{}
 }
 
-// Create a new thread safe event.
+// CreateEventThreadSafe create a new thread safe event.
 func (factory *EventFactory) CreateEventThreadSafe(options ...EventOption) Event {
 	event := factory.CreateEvent(options...)
 	return &eventThreadSafe{

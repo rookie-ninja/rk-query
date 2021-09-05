@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
@@ -37,17 +38,17 @@ func newTimeTracker(name string) *timeTracker {
 	}
 }
 
-// Get name of current timeTracker.
+// GetName returns name of current timeTracker.
 func (tracker *timeTracker) GetName() string {
 	return tracker.name
 }
 
-// Get count of how many times Start() has been called.
+// GetCount returns count of how many times Start() has been called.
 func (tracker *timeTracker) GetCount() int64 {
 	return tracker.countTotal
 }
 
-// Get elapsed time in milli seconds.
+// GetElapsedMs returns elapsed time in milli seconds.
 func (tracker *timeTracker) GetElapsedMs() int64 {
 	return tracker.elapsedTotalMs
 }
@@ -87,7 +88,7 @@ func (tracker *timeTracker) End(nowMs int64) {
 	tracker.indexCurr--
 }
 
-// Force to elapse timer.
+// Elapse will force to elapse timer.
 func (tracker *timeTracker) Elapse(elapseTimeMs int64) {
 	if elapseTimeMs < 0 {
 		return
@@ -95,7 +96,7 @@ func (tracker *timeTracker) Elapse(elapseTimeMs int64) {
 	tracker.ElapseWithSample(elapseTimeMs, 1)
 }
 
-// For to elapse timer with number of sample.
+// ElapseWithSample elapse timer with number of sample.
 func (tracker *timeTracker) ElapseWithSample(elapseTimeMs int64, numSample int64) {
 	if elapseTimeMs < 0 || numSample < 0 {
 		return
@@ -105,7 +106,7 @@ func (tracker *timeTracker) ElapseWithSample(elapseTimeMs int64, numSample int64
 	tracker.elapsedTotalMs += elapseTimeMs
 }
 
-// stop current timer.
+// Finish stops current timer.
 func (tracker *timeTracker) Finish() {
 	tracker.isFinished = true
 
@@ -120,7 +121,7 @@ func (tracker *timeTracker) Finish() {
 	tracker.indexCurr = 0
 }
 
-// Convert to zap fields.
+// ToZapFields convert to zap fields.
 func (tracker *timeTracker) ToZapFields(enc *zapcore.MapObjectEncoder) []zap.Field {
 	if tracker.indexCurr == 0 {
 		if enc != nil {

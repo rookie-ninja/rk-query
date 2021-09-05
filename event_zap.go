@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
@@ -18,11 +19,15 @@ import (
 type eventStatus int
 
 const (
+	// NotStarted will be assigned to Event before SetStartTime() was called.
 	NotStarted eventStatus = 0
+	// InProgress will be assigned to Event after SetStartTime() was called.
 	InProgress eventStatus = 1
-	Ended      eventStatus = 2
+	// Ended will be assigned to Event after SetEndTime() was called.
+	Ended eventStatus = 2
 )
 
+// String will return string value of event status.
 func (status eventStatus) String() string {
 	names := [...]string{
 		"NotStarted",
@@ -37,25 +42,29 @@ func (status eventStatus) String() string {
 	return names[status]
 }
 
+// Encoding supported format of Console and JSON currently.
 type Encoding int
 
 const (
+	// CONSOLE is human readable format.
 	CONSOLE Encoding = 0
-	JSON    Encoding = 1
+	// JSON format.
+	JSON Encoding = 1
 )
 
-// Stringer above config file types.
+// String will return string value of Encoding types.
 func (ec Encoding) String() string {
-	names := [...]string{"json", "console"}
+	names := [...]string{"console", "json"}
 
 	// Please do not forget to change the boundary while adding a new config file types
-	if ec < JSON || ec > CONSOLE {
+	if ec > JSON || ec < CONSOLE {
 		return "UNKNOWN"
 	}
 
 	return names[ec]
 }
 
+// ToEncoding returns Encoding type from string value.
 func ToEncoding(f string) Encoding {
 	if strings.ToLower(f) == "json" {
 		return JSON
@@ -94,19 +103,19 @@ type eventZap struct {
 
 // ************* Time *************
 
-// Set start timer of current event. This can be overridden by user.
+// SetStartTime sets start timer of current event. This can be overridden by user.
 // We keep this function open in order to mock event during unit test.
 func (event *eventZap) SetStartTime(curr time.Time) {
 	event.startTime = curr
 	event.status = InProgress
 }
 
-// Get start time of current event data.
+// GetStartTime Get start time of current event data.
 func (event *eventZap) GetStartTime() time.Time {
 	return event.startTime
 }
 
-// Set end timer of current event. This can be overridden by user.
+// SetEndTime sets end timer of current event. This can be overridden by user.
 // We keep this function open in order to mock event during unit test.
 func (event *eventZap) SetEndTime(curr time.Time) {
 	if event.status != InProgress {
@@ -117,61 +126,61 @@ func (event *eventZap) SetEndTime(curr time.Time) {
 	event.status = Ended
 }
 
-// Get end time of current event data.
+// GetEndTime returns end time of current event data.
 func (event *eventZap) GetEndTime() time.Time {
 	return event.endTime
 }
 
 // ************* Payload *************
 
-// Add payload as zap.Field.
+// AddPayloads function add payload as zap.Field.
 // Payload could be anything with RPC requests or user event such as http request param.
 func (event *eventZap) AddPayloads(fields ...zap.Field) {
 	event.payloads = append(event.payloads, fields...)
 }
 
-// List payloads.
+// ListPayloads will lists payloads.
 func (event *eventZap) ListPayloads() []zap.Field {
 	return event.payloads
 }
 
 // ************* Identity *************
 
-// Get event id of current event.
+// GetEventId returns event id of current event.
 func (event *eventZap) GetEventId() string {
 	return event.eventId
 }
 
-// Set event id of current event.
+// SetEventId sets event id of current event.
 // A new event id would be created while event data was created from EventFactory.
 // User could override event id with this function.
 func (event *eventZap) SetEventId(id string) {
 	event.eventId = id
 }
 
-// Get trace id of current event.
+// GetTraceId returns trace id of current event.
 func (event *eventZap) GetTraceId() string {
 	return event.traceId
 }
 
-// Set trace id of current event.
+// SetTraceId set trace id of current event.
 func (event *eventZap) SetTraceId(id string) {
 	event.traceId = id
 }
 
-// Get request id of current event.
+// GetRequestId returns request id of current event.
 func (event *eventZap) GetRequestId() string {
 	return event.requestId
 }
 
-// Set request id of current event.
+// SetRequestId set request id of current event.
 func (event *eventZap) SetRequestId(id string) {
 	event.requestId = id
 }
 
 // ************* Error *************
 
-// Add an error into event which could be printed with error.Error() function.
+// AddErr function adds an error into event which could be printed with error.Error() function.
 func (event *eventZap) AddErr(err error) {
 	if err == nil {
 		return
@@ -191,7 +200,7 @@ func (event *eventZap) AddErr(err error) {
 	}
 }
 
-// Get error count.
+// GetErrCount returns error count.
 // We will use value of error.Error() as the key.
 func (event *eventZap) GetErrCount(err error) int64 {
 	name := err.Error()
@@ -210,39 +219,39 @@ func (event *eventZap) GetErrCount(err error) int64 {
 
 // ************* Event *************
 
-// Get operation of current event.
+// GetOperation returns operation of current event.
 func (event *eventZap) GetOperation() string {
 	return event.operation
 }
 
-// Set operation of current event.
+// SetOperation sets operation of current event.
 func (event *eventZap) SetOperation(operation string) {
 	event.operation = operation
 }
 
-// Get remote address of current event.
+// GetRemoteAddr returns remote address of current event.
 func (event *eventZap) GetRemoteAddr() string {
 	return event.remoteAddr
 }
 
-// Set remote address of current event, mainly used in RPC calls.
+// SetRemoteAddr sets remote address of current event, mainly used in RPC calls.
 // Default value of <localhost> would be assigned while creating event via EventFactory.
 func (event *eventZap) SetRemoteAddr(addr string) {
 	event.remoteAddr = addr
 }
 
-// Get response code of current event.
+// GetResCode returns response code of current event.
 // Mainly used in RPC calls.
 func (event *eventZap) GetResCode() string {
 	return event.resCode
 }
 
-// Set response code of current event.
+// SetResCode sets response code of current event.
 func (event *eventZap) SetResCode(resCode string) {
 	event.resCode = resCode
 }
 
-// Get event status of current event.
+// GetEventStatus returns event status of current event.
 // Available event status as bellow:
 // 1: NotStarted
 // 2: InProgress
@@ -251,7 +260,7 @@ func (event *eventZap) GetEventStatus() eventStatus {
 	return event.status
 }
 
-// Start timer of current sub event.
+// StartTimer starts timer of current sub event.
 func (event *eventZap) StartTimer(name string) {
 	if !event.inProgress() || len(name) < 1 {
 		return
@@ -273,7 +282,7 @@ func (event *eventZap) StartTimer(name string) {
 	tracker.Start(nowMs)
 }
 
-// End timer of current sub event.
+// EndTimer ends timer of current sub event.
 func (event *eventZap) EndTimer(name string) {
 	if !event.inProgress() || len(name) < 1 {
 		return
@@ -289,12 +298,12 @@ func (event *eventZap) EndTimer(name string) {
 	tracker.End(nowMs)
 }
 
-// Update timer of current sub event with time elapsed in milli seconds.
+// UpdateTimerMs updates timer of current sub event with time elapsed in milli seconds.
 func (event *eventZap) UpdateTimerMs(name string, elapsedMs int64) {
 	event.UpdateTimerMsWithSample(name, elapsedMs, 1)
 }
 
-// Update timer of current sub event with time elapsed in milli seconds and sample.
+// UpdateTimerMsWithSample updates timer of current sub event with time elapsed in milli seconds.
 func (event *eventZap) UpdateTimerMsWithSample(name string, elapsedMs, sample int64) {
 	if !event.inProgress() || len(name) < 1 {
 		return
@@ -316,7 +325,7 @@ func (event *eventZap) UpdateTimerMsWithSample(name string, elapsedMs, sample in
 	tracker.ElapseWithSample(elapsedMs, sample)
 }
 
-// Get timer elapsed in milli seconds.
+// GetTimeElapsedMs returns timer elapsed in milli seconds.
 func (event *eventZap) GetTimeElapsedMs(name string) int64 {
 	timer, contains := event.tracker[name]
 	if !contains {
@@ -326,7 +335,7 @@ func (event *eventZap) GetTimeElapsedMs(name string) int64 {
 	return timer.GetElapsedMs()
 }
 
-// Get value with key in pairs.
+// GetValueFromPair returns value with key in pairs.
 func (event *eventZap) GetValueFromPair(key string) string {
 	val, ok := event.pairs.Fields[key]
 	str := cast.ToString(val)
@@ -338,12 +347,12 @@ func (event *eventZap) GetValueFromPair(key string) string {
 	}
 }
 
-// Add value with key in pairs.
+// AddPair adds value with key in pairs.
 func (event *eventZap) AddPair(key, value string) {
 	event.pairs.AddString(key, value)
 }
 
-// Get counter of current event.
+// GetCounter returns counter of current event.
 func (event *eventZap) GetCounter(key string) int64 {
 	val, ok := event.counters.Fields[key]
 
@@ -354,12 +363,12 @@ func (event *eventZap) GetCounter(key string) int64 {
 	}
 }
 
-// Set counter of current event.
+// SetCounter sets counter of current event.
 func (event *eventZap) SetCounter(key string, value int64) {
 	event.counters.AddInt64(key, value)
 }
 
-// Increase counter of current event.
+// IncCounter increases counter of current event.
 func (event *eventZap) IncCounter(key string, delta int64) {
 	val, ok := event.counters.Fields[key]
 
@@ -370,7 +379,7 @@ func (event *eventZap) IncCounter(key string, delta int64) {
 	}
 }
 
-// Set event status and flush to logger.
+// Finish sets event status and flush to logger.
 func (event *eventZap) Finish() {
 	if event.quietMode {
 		return

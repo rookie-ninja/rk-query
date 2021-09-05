@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
@@ -14,6 +15,11 @@ func TestNewEventHelper(t *testing.T) {
 	helper := NewEventHelper(NewEventFactory())
 
 	assert.NotNil(t, helper)
+	assert.NotNil(t, helper.Factory)
+}
+
+func TestNewEventHelper_WithEmptyFactory(t *testing.T) {
+	helper := NewEventHelper(nil)
 	assert.NotNil(t, helper.Factory)
 }
 
