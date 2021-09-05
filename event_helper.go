@@ -2,6 +2,7 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
@@ -10,6 +11,7 @@ import (
 )
 
 var (
+	// StdLoggerConfigBytes defines zap logger config whose output path is stdout.
 	StdLoggerConfigBytes = []byte(`{
      "level": "info",
      "encoding": "console",
@@ -39,15 +41,16 @@ var (
     "compress": true
    }`)
 
+	// StdoutLogger defines zap logger which use StdLoggerConfigBytes as config.
 	StdoutLogger, _, _ = rk_logger.NewZapLoggerWithBytes(StdLoggerConfigBytes, rk_logger.JSON)
 )
 
-// A helper function for easy use of EventData
+// EventHelper is a helper function for easy use of EventData.
 type EventHelper struct {
 	Factory *EventFactory
 }
 
-// Crate a new event helper.
+// NewEventHelper creates a new event helper.
 func NewEventHelper(factory *EventFactory) *EventHelper {
 	if factory == nil {
 		factory = NewEventFactory()
@@ -55,7 +58,7 @@ func NewEventHelper(factory *EventFactory) *EventHelper {
 	return &EventHelper{factory}
 }
 
-// Create and start a new event with options.
+// Start function creates and start a new event with options.
 func (helper *EventHelper) Start(operation string, opts ...EventOption) Event {
 	event := helper.Factory.CreateEvent(opts...)
 

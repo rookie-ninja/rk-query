@@ -2,18 +2,21 @@
 //
 // Use of this source code is governed by an Apache-style
 // license that can be found in the LICENSE file.
+
 package rkquery
 
 import (
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zapcore"
 	"testing"
+	"time"
 )
 
-func TestNewTimeTrackerWithNilName(t *testing.T) {
+func TestNewTimeTracker_WithNilName(t *testing.T) {
 	assert.Nil(t, newTimeTracker(""))
 }
 
-func TestNewTimeTrackerHappyCase(t *testing.T) {
+func TestNewTimeTracker_HappyCase(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	assert.NotNil(t, tracker)
 	assert.Equal(t, "fake", tracker.name)
@@ -24,8 +27,18 @@ func TestNewTimeTrackerHappyCase(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestGetNameHappyCase(t *testing.T) {
-	assert.Equal(t, "fake", newTimeTracker("fake").name)
+func TestTimeTracker_GetName(t *testing.T) {
+	assert.Equal(t, "fake", newTimeTracker("fake").GetName())
+}
+
+func TestTimeTracker_GetCount(t *testing.T) {
+	assert.Zero(t, newTimeTracker("fake").GetCount())
+}
+
+func TestTimeTracker_GetElapsedMs(t *testing.T) {
+	tracker := newTimeTracker("fake")
+	tracker.elapsedTotalMs = 1
+	assert.Equal(t, tracker.elapsedTotalMs, tracker.GetElapsedMs())
 }
 
 func TestStartWithNegativeNowMS(t *testing.T) {
@@ -40,7 +53,7 @@ func TestStartWithNegativeNowMS(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestStartWithZeroIndexCurr(t *testing.T) {
+func TestStart_WithZeroIndexCurr(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	// tracker should do nothing about negative value
@@ -53,7 +66,7 @@ func TestStartWithZeroIndexCurr(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestStartWithTwoIndexCurr(t *testing.T) {
+func TestStart_WithTwoIndexCurr(t *testing.T) {
 	tracker := newTimeTracker("fake")
 
 	tracker.Start(1)
@@ -69,7 +82,7 @@ func TestStartWithTwoIndexCurr(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestStartWithThreeIndexCurr(t *testing.T) {
+func TestStart_WithThreeIndexCurr(t *testing.T) {
 	tracker := newTimeTracker("fake")
 
 	tracker.Start(1)
@@ -86,7 +99,7 @@ func TestStartWithThreeIndexCurr(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestEndWithoutStart(t *testing.T) {
+func TestEnd_WithoutStart(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.End(1)
 
@@ -98,7 +111,7 @@ func TestEndWithoutStart(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestEndWithNegativeNowMS(t *testing.T) {
+func TestEnd_WithNegativeNowMS(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.End(-1)
 
@@ -154,7 +167,7 @@ func TestEndWithIncompleteEnd(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestElapseWithNegativeParam(t *testing.T) {
+func TestElapse_WithNegativeParam(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.Elapse(-1)
 
@@ -166,7 +179,7 @@ func TestElapseWithNegativeParam(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestElapseHappyCase(t *testing.T) {
+func TestElapse_HappyCase(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.Elapse(1)
 
@@ -178,7 +191,7 @@ func TestElapseHappyCase(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestElapseWithSampleWithNegativeTime(t *testing.T) {
+func TestElapseWithSample_WithNegativeTime(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.ElapseWithSample(-1, 1)
 
@@ -190,7 +203,7 @@ func TestElapseWithSampleWithNegativeTime(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestElapseWithSampleWithNegativeSample(t *testing.T) {
+func TestElapseWithSample_WithNegativeSample(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.ElapseWithSample(1, -1)
 
@@ -214,7 +227,7 @@ func TestElapseWithSampleHappyCase(t *testing.T) {
 	assert.False(t, tracker.isFinished)
 }
 
-func TestFinishHappyCase(t *testing.T) {
+func TestFinish_HappyCase(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 	tracker.End(2)
@@ -229,7 +242,7 @@ func TestFinishHappyCase(t *testing.T) {
 	assert.True(t, tracker.isFinished)
 }
 
-func TestFinishWithoutEnd(t *testing.T) {
+func TestFinish_WithoutEnd(t *testing.T) {
 	tracker := newTimeTracker("fake")
 	tracker.Start(1)
 
@@ -239,4 +252,22 @@ func TestFinishWithoutEnd(t *testing.T) {
 	assert.Equal(t, int64(0), tracker.indexCurr)
 	assert.Equal(t, int64(1), tracker.countTotal)
 	assert.True(t, tracker.isFinished)
+}
+
+func TestTimeTracker_ToZapFields_WithNilEncoder(t *testing.T) {
+	tracker := newTimeTracker("fake")
+	tracker.Start(time.Now().UnixNano())
+	tracker.Elapse(1)
+	tracker.Finish()
+
+	assert.NotEmpty(t, tracker.ToZapFields(nil))
+}
+
+func TestTimeTracker_ToZapFields_HappyCase(t *testing.T) {
+	tracker := newTimeTracker("fake")
+	tracker.Start(time.Now().UnixNano())
+	tracker.Elapse(1)
+	tracker.Finish()
+
+	assert.NotEmpty(t, tracker.ToZapFields(zapcore.NewMapObjectEncoder()))
 }
