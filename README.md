@@ -28,11 +28,6 @@ Zap logger needs to be pass to query in order to write logs
 
 Please refer https://github.com/rookie-ninja/rk-logger for easy initialization of zap logger
 
-### With stdout
-```go
-
-```
-
 ### With Console encoding
 It is human friendly printed query log encoding type.
 
