@@ -12,7 +12,6 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [With stdout](#with-stdout)
   - [With Console encoding](#with-console-encoding)
   - [With JSON encoding](#with-json-encoding)
   - [Development Status: Stable](#development-status-stable)
@@ -27,11 +26,6 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 Zap logger needs to be pass to query in order to write logs
 
 Please refer https://github.com/rookie-ninja/rk-logger for easy initialization of zap logger
-
-### With stdout
-```go
-
-```
 
 ### With Console encoding
 It is human friendly printed query log encoding type.
