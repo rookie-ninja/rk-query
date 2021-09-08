@@ -12,7 +12,6 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [With stdout](#with-stdout)
   - [With Console encoding](#with-console-encoding)
   - [With JSON encoding](#with-json-encoding)
   - [Development Status: Stable](#development-status-stable)
