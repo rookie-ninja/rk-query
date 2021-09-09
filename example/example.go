@@ -105,8 +105,10 @@ func withEventHelper() {
 	helper.Finish(event)
 }
 
+// MyError custom error type
 type MyError struct{}
 
+// Error return string value of current error
 func (err MyError) Error() string {
 	return "my error"
 }

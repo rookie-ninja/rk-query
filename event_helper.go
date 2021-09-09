@@ -74,7 +74,7 @@ func (helper *EventHelper) Finish(event Event) {
 	event.Finish()
 }
 
-// Finish current event with condition.
+// FinishWithCond finish current event with condition.
 func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	if success {
 		event.SetCounter("success", 1)
@@ -88,7 +88,7 @@ func (helper *EventHelper) FinishWithCond(event Event, success bool) {
 	event.Finish()
 }
 
-// Finish current event with error.
+// FinishWithError finish current event with error.
 func (helper *EventHelper) FinishWithError(event Event, err error) {
 	if err == nil {
 		helper.FinishWithCond(event, true)

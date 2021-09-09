@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Event is used to record any event related stuff like RPC
 type Event interface {
 	// ************* Time *************
 
