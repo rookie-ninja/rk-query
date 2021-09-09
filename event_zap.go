@@ -342,9 +342,9 @@ func (event *eventZap) GetValueFromPair(key string) string {
 
 	if ok && len(str) > 0 {
 		return str
-	} else {
-		return ""
 	}
+
+	return ""
 }
 
 // AddPair adds value with key in pairs.
@@ -358,9 +358,9 @@ func (event *eventZap) GetCounter(key string) int64 {
 
 	if ok {
 		return cast.ToInt64(val)
-	} else {
-		return -1
 	}
+
+	return -1
 }
 
 // SetCounter sets counter of current event.
