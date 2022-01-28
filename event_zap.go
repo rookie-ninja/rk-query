@@ -453,7 +453,9 @@ func (event *eventZap) toConsoleFormat() string {
 	builder.WriteString(fmt.Sprintf("%s=%s\n", payloadsKey, event.marshalPayloads()))
 
 	// ************* Error *************
-	builder.WriteString(fmt.Sprintf("%s=%s\n", errKey, event.marshalEncoder(event.errors)))
+	if len(event.errors.Fields) > 0 {
+		builder.WriteString(fmt.Sprintf("%s=%s\n", errKey, event.marshalEncoder(event.errors)))
+	}
 
 	// ************* Counter *************
 	builder.WriteString(fmt.Sprintf("%s=%s\n", countersKey, event.marshalEncoder(event.counters)))
@@ -558,6 +560,10 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 		zap.String(remoteAddrKey, event.GetRemoteAddr()),
 		zap.String(operationKey, event.GetOperation()),
 		zap.String(eventStatusKey, event.GetEventStatus().String()))
+
+	if len(event.errors.Fields) > 0 {
+		fields = append(fields, zap.Any(errKey, event.errors.Fields))
+	}
 
 	// resCode
 	if len(event.resCode) > 0 {

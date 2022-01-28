@@ -44,8 +44,8 @@ var (
 
 func main() {
 	withEventConsoleEncoding()
-	withEventJSONEncoding()
-	withEventHelper()
+	//withEventJSONEncoding()
+	//withEventHelper()
 }
 
 func withEventJSONEncoding() {
@@ -65,7 +65,7 @@ func withEventJSONEncoding() {
 	event.AddPair("key", "value")
 	event.SetCounter("count", 1)
 	event.AddPayloads(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
-	event.AddErr(MyError{})
+	//event.AddErr(MyError{})
 	event.SetResCode("200")
 	event.SetEndTime(time.Now())
 	event.Finish()
