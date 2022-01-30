@@ -396,6 +396,11 @@ func (event *eventZap) Finish() {
 	}
 }
 
+// Sync flushes logs in buffer, mainly used for external syncer
+func (event *eventZap) Sync() {
+	event.logger.Sync()
+}
+
 // ************* Internal *************
 
 // Marshal to RK format.

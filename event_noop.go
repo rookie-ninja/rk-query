@@ -193,3 +193,8 @@ func (event *eventNoop) IncCounter(string, int64) {
 func (event *eventNoop) Finish() {
 	// Noop
 }
+
+// Sync flushes logs in buffer, mainly used for external syncer
+func (event *eventNoop) Sync() {
+	// Noop
+}

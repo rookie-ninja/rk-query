@@ -130,4 +130,7 @@ type Event interface {
 
 	// Finish sets event status and flush to logger.
 	Finish()
+
+	// Sync flushes logger in buffer
+	Sync()
 }

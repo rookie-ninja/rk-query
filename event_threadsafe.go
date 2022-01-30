@@ -293,3 +293,11 @@ func (event *eventThreadSafe) Finish() {
 
 	event.delegate.Finish()
 }
+
+// Sync flushes logs in buffer, mainly used for external syncer
+func (event *eventThreadSafe) Sync() {
+	event.lock.Lock()
+	defer event.lock.Unlock()
+
+	event.delegate.Sync()
+}
