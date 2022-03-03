@@ -15,8 +15,8 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 - [Console encoding](#console-encoding)
 - [JSON encoding](#json-encoding)
 - [Flatten encoding](#flatten-encoding)
-  - [Development Status: Stable](#development-status-stable)
-  - [Contributing](#contributing)
+- [Development Status: Stable](#development-status-stable)
+- [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -285,9 +285,9 @@ Output
 ```
 
 
-### Development Status: Stable
+## Development Status: Stable
 
-### Contributing
+## Contributing
 We encourage and support an active, healthy community of contributors &mdash;
 including you! Details are in the [contribution guide](CONTRIBUTING.md) and
 the [code of conduct](CODE_OF_CONDUCT.md). The rk maintainers keep an eye on
