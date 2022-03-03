@@ -421,7 +421,7 @@ func (event *eventZap) Sync() {
 // Marshal to FLATTEN format.
 func (event *eventZap) toFlattenFormat() string {
 	builder := &bytes.Buffer{}
-	writer := tabwriter.NewWriter(builder, 0, 0, 4, ' ', tabwriter.TabIndent)
+	writer := tabwriter.NewWriter(builder, 2, 0, 4, ' ', tabwriter.TabIndent|tabwriter.StripEscape)
 
 	// timestamp
 	fmt.Fprint(writer, fmt.Sprintf("%s", event.GetEndTime().Format("2006-01-02T15:04:05.000Z0700")))
