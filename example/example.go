@@ -43,7 +43,8 @@ var (
 )
 
 func main() {
-	withEventConsoleEncoding()
+	withEventFlattenEncoding()
+	//withEventConsoleEncoding()
 	//withEventJSONEncoding()
 	//withEventHelper()
 }
@@ -80,6 +81,32 @@ func withEventConsoleEncoding() {
 		rkquery.WithAppName("appName"),
 		rkquery.WithAppVersion("v0.0.1"),
 		rkquery.WithEncoding(rkquery.CONSOLE),
+		rkquery.WithOperation("op"),
+		rkquery.WithZapLogger(logger))
+	event := fac.CreateEvent()
+
+	event.SetStartTime(time.Now())
+	event.StartTimer("t1")
+	time.Sleep(1 * time.Second)
+	event.EndTimer("t1")
+	event.AddPair("key", "value")
+	event.SetCounter("count", 1)
+	event.AddPayloads(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
+	event.AddErr(MyError{})
+	event.SetResCode("200")
+	event.SetEndTime(time.Now())
+	event.Finish()
+}
+
+func withEventFlattenEncoding() {
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
+
+	fac := rkquery.NewEventFactory(
+		rkquery.WithEntryName("entry-example"),
+		rkquery.WithEntryType("example"),
+		rkquery.WithAppName("appName"),
+		rkquery.WithAppVersion("v0.0.1"),
+		rkquery.WithEncoding(rkquery.FLATTEN),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
 	event := fac.CreateEvent()

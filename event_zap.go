@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"strings"
+	"text/tabwriter"
 	"time"
 )
 
@@ -50,14 +51,16 @@ const (
 	CONSOLE Encoding = 0
 	// JSON format.
 	JSON Encoding = 1
+	// FLATTEN format.
+	FLATTEN Encoding = 2
 )
 
 // String will return string value of Encoding types.
 func (ec Encoding) String() string {
-	names := [...]string{"console", "json"}
+	names := [...]string{"console", "json", "flatten"}
 
 	// Please do not forget to change the boundary while adding a new config file types
-	if ec > JSON || ec < CONSOLE {
+	if ec > FLATTEN || ec < CONSOLE {
 		return "UNKNOWN"
 	}
 
@@ -66,9 +69,15 @@ func (ec Encoding) String() string {
 
 // ToEncoding returns Encoding type from string value.
 func ToEncoding(f string) Encoding {
-	if strings.ToLower(f) == "json" {
+	f = strings.ToLower(f)
+	switch f {
+	case "json":
 		return JSON
-	} else if strings.ToLower(f) == "console" {
+	case "console":
+		return CONSOLE
+	case "flatten":
+		return FLATTEN
+	default:
 		return CONSOLE
 	}
 
@@ -384,9 +393,15 @@ func (event *eventZap) Finish() {
 	if event.quietMode {
 		return
 	}
-	if event.encoding == JSON {
+
+	switch event.encoding {
+	case JSON:
 		event.logger.With(event.toJsonFormat()...).Info("")
-	} else {
+	case CONSOLE:
+		event.logger.Info(event.toConsoleFormat())
+	case FLATTEN:
+		event.logger.Info(event.toFlattenFormat())
+	default:
 		event.logger.Info(event.toConsoleFormat())
 	}
 
@@ -403,7 +418,83 @@ func (event *eventZap) Sync() {
 
 // ************* Internal *************
 
-// Marshal to RK format.
+// Marshal to FLATTEN format.
+func (event *eventZap) toFlattenFormat() string {
+	builder := &bytes.Buffer{}
+	writer := tabwriter.NewWriter(builder, 0, 0, 4, ' ', tabwriter.TabIndent)
+
+	// timestamp
+	fmt.Fprint(writer, fmt.Sprintf("%s", event.GetEndTime().Format("2006-01-02T15:04:05.000Z0700")))
+
+	// res code
+	fmt.Fprint(writer, fmt.Sprintf("\t[%s]", getDefaultIfEmptyString(event.resCode, "[X]")))
+
+	// elapsed
+	fmt.Fprint(writer, fmt.Sprintf("\t%dms", event.GetEndTime().Sub(event.GetStartTime()).Milliseconds()))
+
+	// API method
+	// distinguish restful API and gRPC
+	var grpcMethod, grpcServer, grpcType, apiPath, apiMethod, apiProtocol *zap.Field
+	for i := range event.payloads {
+		field := event.payloads[i]
+		switch field.Key {
+		case "grpcMethod":
+			grpcMethod = &field
+		case "grpcServer":
+			grpcServer = &field
+		case "grpcType":
+			grpcType = &field
+		case "apiPath":
+			apiPath = &field
+		case "apiMethod":
+			apiMethod = &field
+		case "apiProtocol":
+			apiProtocol = &field
+		}
+	}
+
+	method, operation, protocol := "", "", ""
+	if grpcMethod != nil && grpcServer != nil {
+		method = grpcServer.String
+		operation = grpcMethod.String
+		protocol = grpcType.String
+	} else if apiPath != nil && apiMethod != nil {
+		method = apiMethod.String
+		operation = apiPath.String
+		protocol = apiProtocol.String
+	} else {
+		operation = event.operation
+		method = event.entryName
+		protocol = event.entryType
+	}
+
+	// operation
+	fmt.Fprint(writer, fmt.Sprintf("\t%s", getDefaultIfEmptyString(operation, "[X]")))
+
+	// method
+	fmt.Fprint(writer, fmt.Sprintf("\t%s", getDefaultIfEmptyString(method, "[X]")))
+
+	// protocol
+	fmt.Fprint(writer, fmt.Sprintf("\t%s", getDefaultIfEmptyString(protocol, "[X]")))
+
+	// remote addr
+	fmt.Fprint(writer, fmt.Sprintf("\t%s", getDefaultIfEmptyString(event.remoteAddr, "[X]")))
+
+	// ids
+	ids := make([]string, 0)
+	if len(event.eventId) > 0 {
+		ids = append(ids, event.eventId)
+	}
+	if len(event.traceId) > 0 {
+		ids = append(ids, event.traceId)
+	}
+	fmt.Fprint(writer, fmt.Sprintf("\t[%s]", getDefaultIfEmptyString(strings.Join(ids, ","), "[X]")))
+
+	writer.Flush()
+	return builder.String()
+}
+
+// Marshal to CONSOLE format.
 func (event *eventZap) toConsoleFormat() string {
 	builder := &bytes.Buffer{}
 

@@ -12,22 +12,23 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-  - [With Console encoding](#with-console-encoding)
-  - [With JSON encoding](#with-json-encoding)
+- [Console encoding](#console-encoding)
+- [JSON encoding](#json-encoding)
+- [Flatten encoding](#flatten-encoding)
   - [Development Status: Stable](#development-status-stable)
   - [Contributing](#contributing)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
-`go get -u github.com/rookie-ninja/rk-query`
+`go get github.com/rookie-ninja/rk-query`
 
 ## Quick Start
 Zap logger needs to be pass to query in order to write logs
 
 Please refer https://github.com/rookie-ninja/rk-logger for easy initialization of zap logger
 
-### With Console encoding
+## Console encoding
 It is human friendly printed query log encoding type.
 
 Example:
@@ -85,6 +86,7 @@ func withEventConsoleEncoding() {
 	event.WriteLog()
 }
 ```
+
 Output
 ```
 ------------------------------------------------------------------------
@@ -107,7 +109,7 @@ eventStatus=Ended
 EOE
 ```
 
-### With JSON encoding
+## JSON encoding
 It is parsing friendly printed query log encoding type.
 
 Example:
@@ -165,6 +167,7 @@ func withEventJSONEncoding() {
 	event.WriteLog()
 }
 ```
+
 Output 
 We formatted JSON output bellow, actual logs would not be a pretty formatted JSON
 ```
@@ -216,6 +219,71 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
     "resCode":"200"
 }
 ```
+
+## Flatten encoding
+It will skip most of values and remains only valuable ones.
+
+Example:
+```go
+var (
+    bytes = []byte(`{
+     "level": "info",
+     "encoding": "console",
+     "outputPaths": ["stdout"],
+     "errorOutputPaths": ["stderr"],
+     "initialFields": {},
+     "encoderConfig": {
+       "messageKey": "msg",
+       "levelKey": "",
+       "nameKey": "",
+       "timeKey": "",
+       "callerKey": "",
+       "stacktraceKey": "",
+       "callstackKey": "",
+       "errorKey": "",
+       "timeEncoder": "iso8601",
+       "fileKey": "",
+       "levelEncoder": "capital",
+       "durationEncoder": "second",
+       "callerEncoder": "full",
+       "nameEncoder": "full"
+     },
+    "maxsize": 1024,
+    "maxage": 7,
+    "maxbackups": 3,
+    "localtime": true,
+    "compress": true
+   }`)
+)
+
+func withEventConsoleEncoding() {
+	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
+
+	fac := rkquery.NewEventFactory(
+		rkquery.WithAppName("appName"),
+		rkquery.WithEncoding(rkquery.FLATTEN),
+		rkquery.WithOperation("op"),
+		rkquery.WithLogger(logger))
+	event := fac.CreateEvent()
+
+	event.SetStartTime(time.Now())
+	event.StartTimer("t1")
+	time.Sleep(1 * time.Second)
+	event.EndTimer("t1")
+	event.AddPair("key", "value")
+	event.SetCounter("count", 1)
+	event.AddFields(zap.String("f1", "f2"), zap.Time("t2", time.Now()))
+	event.AddErr(MyError{})
+	event.SetEndTime(time.Now())
+	event.WriteLog()
+}
+```
+
+Output
+```
+2022-03-04T02:29:53.478+0800    [200]    1002ms    op    entry-example    example    localhost    [f76ab5d3-e765-46ce-8c6f-8ad16e77f3b4]
+```
+
 
 ### Development Status: Stable
 

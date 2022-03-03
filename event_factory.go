@@ -55,7 +55,7 @@ func WithZapLogger(logger *zap.Logger) EventOption {
 // WithEncoding override encoding in Event.
 func WithEncoding(ec Encoding) EventOption {
 	return func(event Event) {
-		if ec != JSON && ec != CONSOLE {
+		if ec != JSON && ec != CONSOLE && ec != FLATTEN {
 			return
 		}
 
