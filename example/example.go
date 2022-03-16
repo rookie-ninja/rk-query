@@ -43,8 +43,8 @@ var (
 )
 
 func main() {
-	withEventFlattenEncoding()
-	//withEventConsoleEncoding()
+	//withEventFlattenEncoding()
+	withEventConsoleEncoding()
 	//withEventJSONEncoding()
 	//withEventHelper()
 }
