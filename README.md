@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rookie-ninja/rk-query)](https://goreportcard.com/report/github.com/rookie-ninja/rk-query)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberjack](https://github.com/natefinch/lumberjack) and [rk-logger](https://github.com/rookie-ninja/rk-logger)
+Human-readable query logger with [zap](https://github.com/uber-go/zap), [lumberjack](https://github.com/natefinch/lumberjack) and [rk-logger](https://github.com/rookie-ninja/rk-logger)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -21,7 +21,7 @@ Human readable query logger with [zap](https://github.com/uber-go/zap), [lumberj
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Installation
-`go get github.com/rookie-ninja/rk-query`
+`go get github.com/rookie-ninja/rk-query/v2`
 
 ## Quick Start
 Zap logger needs to be pass to query in order to write logs
@@ -68,7 +68,7 @@ func withEventConsoleEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
 	fac := rkquery.NewEventFactory(
-		rkquery.WithAppName("appName"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithEncoding(rkquery.CONSOLE),
 		rkquery.WithOperation("op"),
 		rkquery.WithLogger(logger))
@@ -95,7 +95,7 @@ startTime=2021-06-13T01:16:26.581691+08:00
 elapsedNano=1003868481
 timezone=CST
 ids={"eventId":"581812ae-924a-44b2-83f8-fa8eef071393"}
-app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
+service={"serviceName":"appName","serviceVersion":"v0.0.1","entryName":"entry-example","entryKind":"example"}
 env={"arch":"amd64","hostname":"lark.local","realm":"*","region":"*","az":"*","domain":"*","os":"darwin"}
 payloads={"f1":"f2","t2":"2021-06-13T01:16:27.58554+08:00"}
 error={"my error":1}
@@ -149,7 +149,7 @@ func withEventJSONEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
 	fac := rkquery.NewEventFactory(
-		rkquery.WithAppName("appName"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithEncoding(rkquery.JSON),
 		rkquery.WithOperation("op"),
 		rkquery.WithLogger(logger))
@@ -181,9 +181,9 @@ We formatted JSON output bellow, actual logs would not be a pretty formatted JSO
         "requestId":"",
         "traceId":""
     },
-    "app":{
-        "appName":"appName",
-        "appVersion":"unknown",
+    "service":{
+        "serviceName":"serviceName",
+        "serviceVersion":"unknown",
         "entryName":"unknown",
         "entryType":"unknown"
     },
@@ -260,7 +260,7 @@ func withEventConsoleEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rk_logger.JSON)
 
 	fac := rkquery.NewEventFactory(
-		rkquery.WithAppName("appName"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithEncoding(rkquery.FLATTEN),
 		rkquery.WithOperation("op"),
 		rkquery.WithLogger(logger))

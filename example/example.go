@@ -6,7 +6,7 @@ package main
 
 import (
 	"github.com/rookie-ninja/rk-logger"
-	"github.com/rookie-ninja/rk-query"
+	"github.com/rookie-ninja/rk-query/v2"
 	"go.uber.org/zap"
 	"time"
 )
@@ -53,7 +53,7 @@ func withEventJSONEncoding() {
 	logger, _, _ := rklogger.NewZapLoggerWithBytes(bytes, rklogger.JSON)
 
 	fac := rkquery.NewEventFactory(
-		rkquery.WithAppName("appName"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithEncoding(rkquery.JSON),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
@@ -77,8 +77,8 @@ func withEventConsoleEncoding() {
 
 	fac := rkquery.NewEventFactory(
 		rkquery.WithEntryName("entry-example"),
-		rkquery.WithEntryType("example"),
-		rkquery.WithAppName("appName"),
+		rkquery.WithEntryKind("example"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithAppVersion("v0.0.1"),
 		rkquery.WithEncoding(rkquery.CONSOLE),
 		rkquery.WithOperation("op"),
@@ -103,8 +103,8 @@ func withEventFlattenEncoding() {
 
 	fac := rkquery.NewEventFactory(
 		rkquery.WithEntryName("entry-example"),
-		rkquery.WithEntryType("example"),
-		rkquery.WithAppName("appName"),
+		rkquery.WithEntryKind("example"),
+		rkquery.WithServiceName("serviceName"),
 		rkquery.WithAppVersion("v0.0.1"),
 		rkquery.WithEncoding(rkquery.FLATTEN),
 		rkquery.WithOperation("op"),

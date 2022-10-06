@@ -16,7 +16,7 @@ import (
 func TestEventNoop_AllInOne(t *testing.T) {
 	event := &eventNoop{}
 
-	// No panic should be occur
+	// No panic should be occurred
 	event.SetStartTime(time.Now())
 	assert.NotNil(t, event.GetStartTime())
 	event.SetEndTime(time.Now())

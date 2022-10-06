@@ -78,49 +78,49 @@ func WithQuietMode(quietMode bool) EventOption {
 }
 
 // WithEntryName override entry name in Event.
-func WithEntryName(entryName string) EventOption {
+func WithEntryName(name string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
-			v.entryName = entryName
+			v.entryName = name
 		case *eventThreadSafe:
-			v.delegate.entryName = entryName
+			v.delegate.entryName = name
 		}
 	}
 }
 
-// WithEntryType override entry type in Event.
-func WithEntryType(entryType string) EventOption {
+// WithEntryKind override entry kind in Event.
+func WithEntryKind(kind string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
-			v.entryType = entryType
+			v.entryKind = kind
 		case *eventThreadSafe:
-			v.delegate.entryType = entryType
+			v.delegate.entryKind = kind
 		}
 	}
 }
 
-// WithAppName override app name in Event.
-func WithAppName(appName string) EventOption {
+// WithServiceName override service name in Event.
+func WithServiceName(name string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
-			v.appName = appName
+			v.serviceName = name
 		case *eventThreadSafe:
-			v.delegate.appName = appName
+			v.delegate.serviceName = name
 		}
 	}
 }
 
 // WithAppVersion overrides app version in event.
-func WithAppVersion(appVersion string) EventOption {
+func WithAppVersion(version string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
-			v.appVersion = appVersion
+			v.serviceVersion = version
 		case *eventThreadSafe:
-			v.delegate.appVersion = appVersion
+			v.delegate.serviceVersion = version
 		}
 	}
 }
@@ -158,27 +158,27 @@ func NewEventFactory(option ...EventOption) *EventFactory {
 // CreateEvent creates a new event with options.
 func (factory *EventFactory) CreateEvent(options ...EventOption) Event {
 	event := &eventZap{
-		logger:     rklogger.EventLogger,
-		encoding:   CONSOLE,
-		quietMode:  false,
-		appName:    "",
-		appVersion: "",
-		entryName:  "",
-		entryType:  "",
-		eventId:    generateEventId(),
-		traceId:    "",
-		requestId:  "",
-		startTime:  time.Now(),
-		timeZone:   getTimeZone(),
-		payloads:   make([]zap.Field, 0),
-		errors:     zapcore.NewMapObjectEncoder(),
-		operation:  "",
-		remoteAddr: "localhost",
-		resCode:    "",
-		status:     NotStarted,
-		pairs:      zapcore.NewMapObjectEncoder(),
-		counters:   zapcore.NewMapObjectEncoder(),
-		tracker:    make(map[string]*timeTracker),
+		logger:         rklogger.EventLogger,
+		encoding:       CONSOLE,
+		quietMode:      false,
+		serviceName:    "",
+		serviceVersion: "",
+		entryName:      "",
+		entryKind:      "",
+		eventId:        generateEventId(),
+		traceId:        "",
+		requestId:      "",
+		startTime:      time.Now(),
+		timeZone:       getTimeZone(),
+		payloads:       make([]zap.Field, 0),
+		errors:         zapcore.NewMapObjectEncoder(),
+		operation:      "",
+		remoteAddr:     "localhost",
+		resCode:        "",
+		status:         NotStarted,
+		pairs:          zapcore.NewMapObjectEncoder(),
+		counters:       zapcore.NewMapObjectEncoder(),
+		tracker:        make(map[string]*timeTracker),
 	}
 
 	for i := range factory.options {

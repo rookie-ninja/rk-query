@@ -16,11 +16,11 @@ const (
 	elapsedKey   = "elapsedNano"
 	timezoneKey  = "timezone"
 	// ************* App *************
-	appKey        = "app"
-	appNameKey    = "appName"
-	appVersionKey = "appVersion"
-	entryNameKey  = "entryName"
-	entryTypeKey  = "entryType"
+	serviceKey        = "service"
+	serviceNameKey    = "serviceName"
+	serviceVersionKey = "serviceVersion"
+	entryNameKey      = "entryName"
+	entryKindKey      = "entryKind"
 	// ************* Env *************
 	envKey      = "env"
 	hostnameKey = "hostname"

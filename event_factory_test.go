@@ -127,33 +127,33 @@ func TestWithEntryName_HappyCase(t *testing.T) {
 }
 
 func TestWithEntryType_HappyCase(t *testing.T) {
-	entryType := "ut-type"
-	opt := WithEntryType(entryType)
+	entryKind := "ut-kind"
+	opt := WithEntryKind(entryKind)
 
 	// For eventZap
 	event := NewEventFactory().CreateEvent()
 	opt(event)
-	assert.Equal(t, entryType, event.(*eventZap).entryType)
+	assert.Equal(t, entryKind, event.(*eventZap).entryKind)
 
 	// For eventThreadSafe
 	threadSafe := NewEventFactory().CreateEventThreadSafe()
 	opt(threadSafe)
-	assert.Equal(t, entryType, threadSafe.(*eventThreadSafe).delegate.entryType)
+	assert.Equal(t, entryKind, threadSafe.(*eventThreadSafe).delegate.entryKind)
 }
 
 func TestWithWithAppName_HappyCase(t *testing.T) {
-	appName := "ut-app"
-	opt := WithAppName(appName)
+	appName := "ut-service"
+	opt := WithServiceName(appName)
 
 	// For eventZap
 	event := NewEventFactory().CreateEvent()
 	opt(event)
-	assert.Equal(t, appName, event.(*eventZap).appName)
+	assert.Equal(t, appName, event.(*eventZap).serviceName)
 
 	// For eventThreadSafe
 	threadSafe := NewEventFactory().CreateEventThreadSafe()
 	opt(threadSafe)
-	assert.Equal(t, appName, threadSafe.(*eventThreadSafe).delegate.appName)
+	assert.Equal(t, appName, threadSafe.(*eventThreadSafe).delegate.serviceName)
 }
 
 func TestWithWithAppVersion_HappyCase(t *testing.T) {
@@ -163,12 +163,12 @@ func TestWithWithAppVersion_HappyCase(t *testing.T) {
 	// For eventZap
 	event := NewEventFactory().CreateEvent()
 	opt(event)
-	assert.Equal(t, appVersion, event.(*eventZap).appVersion)
+	assert.Equal(t, appVersion, event.(*eventZap).serviceVersion)
 
 	// For eventThreadSafe
 	threadSafe := NewEventFactory().CreateEventThreadSafe()
 	opt(threadSafe)
-	assert.Equal(t, appVersion, threadSafe.(*eventThreadSafe).delegate.appVersion)
+	assert.Equal(t, appVersion, threadSafe.(*eventThreadSafe).delegate.serviceVersion)
 }
 
 func TestWithWithOperation_HappyCase(t *testing.T) {
@@ -211,10 +211,10 @@ func TestEventFactory_CreateEvent_WithoutOptions(t *testing.T) {
 	assert.Equal(t, rklogger.EventLogger, event.(*eventZap).logger)
 	assert.Equal(t, CONSOLE.String(), event.(*eventZap).encoding.String())
 	assert.False(t, event.(*eventZap).quietMode)
-	assert.Empty(t, event.(*eventZap).appName)
-	assert.Empty(t, event.(*eventZap).appVersion)
+	assert.Empty(t, event.(*eventZap).serviceName)
+	assert.Empty(t, event.(*eventZap).serviceVersion)
 	assert.Empty(t, event.(*eventZap).entryName)
-	assert.Empty(t, event.(*eventZap).entryType)
+	assert.Empty(t, event.(*eventZap).entryKind)
 	assert.NotEmpty(t, event.(*eventZap).eventId)
 	assert.Empty(t, event.(*eventZap).traceId)
 	assert.Empty(t, event.(*eventZap).requestId)
@@ -232,13 +232,13 @@ func TestEventFactory_CreateEvent_WithoutOptions(t *testing.T) {
 }
 
 func TestEventFactory_CreateEvent_WithOptions(t *testing.T) {
-	fac := NewEventFactory(WithAppName("ut-app"))
+	fac := NewEventFactory(WithServiceName("ut-service"))
 	event := fac.CreateEvent(WithAppVersion("ut-version"))
 	assert.NotNil(t, event)
 
 	// Check default fields
-	assert.Equal(t, "ut-app", event.(*eventZap).appName)
-	assert.Equal(t, "ut-version", event.(*eventZap).appVersion)
+	assert.Equal(t, "ut-service", event.(*eventZap).serviceName)
+	assert.Equal(t, "ut-version", event.(*eventZap).serviceVersion)
 }
 
 func TestNewEventFactory_HappyCase(t *testing.T) {

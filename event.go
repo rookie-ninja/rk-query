@@ -35,7 +35,7 @@ type Event interface {
 	// Payload could be anything with RPC requests or user event such as http request param.
 	AddPayloads(...zap.Field)
 
-	// ListPayloads will lists payloads.
+	// ListPayloads will list payloads.
 	ListPayloads() []zap.Field
 
 	// ************* Identity *************

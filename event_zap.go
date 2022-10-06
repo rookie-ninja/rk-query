@@ -86,28 +86,28 @@ func ToEncoding(f string) Encoding {
 
 // It is not thread safe.
 type eventZap struct {
-	logger     *zap.Logger
-	encoding   Encoding
-	quietMode  bool
-	appName    string                    // Application
-	appVersion string                    // Application
-	entryName  string                    // Application
-	entryType  string                    // Application
-	eventId    string                    // Ids
-	traceId    string                    // Ids
-	requestId  string                    // Ids
-	endTime    time.Time                 // Time
-	startTime  time.Time                 // Time
-	timeZone   string                    // Time
-	payloads   []zap.Field               // Payloads
-	errors     *zapcore.MapObjectEncoder // Error
-	operation  string                    // Event
-	remoteAddr string                    // Event
-	resCode    string                    // Event
-	status     eventStatus               // Event
-	pairs      *zapcore.MapObjectEncoder // Event
-	counters   *zapcore.MapObjectEncoder // Event
-	tracker    map[string]*timeTracker   // Event
+	logger         *zap.Logger
+	encoding       Encoding
+	quietMode      bool
+	serviceName    string                    // Application
+	serviceVersion string                    // Application
+	entryName      string                    // Application
+	entryKind      string                    // Application
+	eventId        string                    // Ids
+	traceId        string                    // Ids
+	requestId      string                    // Ids
+	endTime        time.Time                 // Time
+	startTime      time.Time                 // Time
+	timeZone       string                    // Time
+	payloads       []zap.Field               // Payloads
+	errors         *zapcore.MapObjectEncoder // Error
+	operation      string                    // Event
+	remoteAddr     string                    // Event
+	resCode        string                    // Event
+	status         eventStatus               // Event
+	pairs          *zapcore.MapObjectEncoder // Event
+	counters       *zapcore.MapObjectEncoder // Event
+	tracker        map[string]*timeTracker   // Event
 }
 
 // ************* Time *************
@@ -465,7 +465,7 @@ func (event *eventZap) toFlattenFormat() string {
 	} else {
 		operation = event.operation
 		method = event.entryName
-		protocol = event.entryType
+		protocol = event.entryKind
 	}
 
 	// operation
@@ -507,7 +507,7 @@ func (event *eventZap) toConsoleFormat() string {
 	// elapsedNano=1005258286
 	// timezone=CST
 	// ids={"eventId":"6a2f84a8-a09a-42dc-bc9e-cabc7977345d"}
-	// app={"appName":"appName","appVersion":"v0.0.1","entryName":"entry-example","entryType":"example"}
+	// service={"serviceName":"serviceName","serviceVersion":"v0.0.1","entryName":"entry-example","entryKind":"example"}
 	// env={"arch":"amd64","hostname":"lark.local","localIP":"localhost","realm":"rk","region":"ap-guangzhou","az":"ap-guangzhou-1","domain":"beta","os":"darwin"}
 	// payloads={"f1":"f2","t2":"2021-06-13T00:24:20.256276+08:00"}
 	// error={"my error":1}
@@ -539,8 +539,8 @@ func (event *eventZap) toConsoleFormat() string {
 	// ************* Ids *************
 	builder.WriteString(fmt.Sprintf("%s=%s\n", idsKey, event.marshalIds()))
 
-	// ************* App *************
-	builder.WriteString(fmt.Sprintf("%s=%s\n", appKey, event.marshalApp()))
+	// ************* Service *************
+	builder.WriteString(fmt.Sprintf("%s=%s\n", serviceKey, event.marshalService()))
 
 	// ************* Env *************
 	builder.WriteString(fmt.Sprintf("%s=%s\n", envKey, event.marshalEnv()))
@@ -593,11 +593,11 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 	//		"requestId":"",
 	//		"traceId":""
 	//  },
-	//	"app":{
-	//	    "appName":"appName",
-	//		"appVersion":"unknown",
+	//	"service":{
+	//	    "serviceName":"serviceName",
+	//		"serviceVersion":"unknown",
 	//		"entryName":"unknown",
-	//		"entryType":"unknown"
+	//		"entryKind":"unknown"
 	//  },
 	//	"env":{
 	//	    "arch":"amd64",
@@ -646,7 +646,7 @@ func (event *eventZap) toJsonFormat() []zap.Field {
 		zap.Int64(elapsedKey, event.GetEndTime().Sub(event.GetStartTime()).Nanoseconds()),
 		zap.String(timezoneKey, event.timeZone),
 		zap.Any(idsKey, event.idsToMapObjectEncoder().Fields),
-		zap.Any(appKey, event.appToMapObjectEncoder().Fields),
+		zap.Any(serviceKey, event.serviceToMapObjectEncoder().Fields),
 		zap.Any(envKey, event.envToMapObjectEncoder().Fields),
 		zap.Any(payloadsKey, event.payloadsToMapObjectEncoder().Fields),
 		zap.Any(errKey, event.errors.Fields),
@@ -724,20 +724,20 @@ func (event *eventZap) marshalIds() string {
 	return event.marshalEncoder(event.idsToMapObjectEncoder())
 }
 
-// Construct app to zapcore.MapObjectEncoder
-func (event *eventZap) appToMapObjectEncoder() *zapcore.MapObjectEncoder {
+// Construct service to zapcore.MapObjectEncoder
+func (event *eventZap) serviceToMapObjectEncoder() *zapcore.MapObjectEncoder {
 	enc := zapcore.NewMapObjectEncoder()
-	enc.AddString(appNameKey, event.appName)
-	enc.AddString(appVersionKey, event.appVersion)
+	enc.AddString(serviceNameKey, event.serviceName)
+	enc.AddString(serviceVersionKey, event.serviceVersion)
 	enc.AddString(entryNameKey, event.entryName)
-	enc.AddString(entryTypeKey, event.entryType)
+	enc.AddString(entryKindKey, event.entryKind)
 
 	return enc
 }
 
-// Marshal app.
-func (event *eventZap) marshalApp() string {
-	return event.marshalEncoder(event.appToMapObjectEncoder())
+// Marshal service.
+func (event *eventZap) marshalService() string {
+	return event.marshalEncoder(event.serviceToMapObjectEncoder())
 }
 
 // Construct timing to zapcore.MapObjectEncoder

@@ -1,4 +1,4 @@
-module github.com/rookie-ninja/rk-query
+module github.com/rookie-ninja/rk-query/v2
 
 go 1.17
 
