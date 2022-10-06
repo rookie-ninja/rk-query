@@ -79,7 +79,7 @@ func withEventConsoleEncoding() {
 		rkquery.WithEntryName("entry-example"),
 		rkquery.WithEntryKind("example"),
 		rkquery.WithServiceName("serviceName"),
-		rkquery.WithAppVersion("v0.0.1"),
+		rkquery.WithServiceVersion("v0.0.1"),
 		rkquery.WithEncoding(rkquery.CONSOLE),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))
@@ -105,7 +105,7 @@ func withEventFlattenEncoding() {
 		rkquery.WithEntryName("entry-example"),
 		rkquery.WithEntryKind("example"),
 		rkquery.WithServiceName("serviceName"),
-		rkquery.WithAppVersion("v0.0.1"),
+		rkquery.WithServiceVersion("v0.0.1"),
 		rkquery.WithEncoding(rkquery.FLATTEN),
 		rkquery.WithOperation("op"),
 		rkquery.WithZapLogger(logger))

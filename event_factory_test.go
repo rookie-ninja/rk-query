@@ -158,7 +158,7 @@ func TestWithWithAppName_HappyCase(t *testing.T) {
 
 func TestWithWithAppVersion_HappyCase(t *testing.T) {
 	appVersion := "ut-version"
-	opt := WithAppVersion(appVersion)
+	opt := WithServiceVersion(appVersion)
 
 	// For eventZap
 	event := NewEventFactory().CreateEvent()
@@ -233,7 +233,7 @@ func TestEventFactory_CreateEvent_WithoutOptions(t *testing.T) {
 
 func TestEventFactory_CreateEvent_WithOptions(t *testing.T) {
 	fac := NewEventFactory(WithServiceName("ut-service"))
-	event := fac.CreateEvent(WithAppVersion("ut-version"))
+	event := fac.CreateEvent(WithServiceVersion("ut-version"))
 	assert.NotNil(t, event)
 
 	// Check default fields

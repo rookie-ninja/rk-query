@@ -113,8 +113,8 @@ func WithServiceName(name string) EventOption {
 	}
 }
 
-// WithAppVersion overrides app version in event.
-func WithAppVersion(version string) EventOption {
+// WithServiceVersion overrides app version in event.
+func WithServiceVersion(version string) EventOption {
 	return func(event Event) {
 		switch v := event.(type) {
 		case *eventZap:
